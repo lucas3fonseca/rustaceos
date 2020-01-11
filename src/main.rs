@@ -1,11 +1,12 @@
 // #[macro_use] extern crate log;
 use env_logger;
-use websocket::ClientBuilder;
-use websocket::{ OwnedMessage, Message };
+use serde_json::Value;
+use websocket::{ClientBuilder, Message, OwnedMessage};
 
 mod serialize;
 
 static ADDRESS: &str = "http://localhost:8080";
+static INITIAL_BLOCK: u32 = 1;
 
 fn main() {
   env_logger::init();
@@ -16,23 +17,62 @@ fn main() {
     Ok(connection) => {
       println!("connected...");
       connection
-    },
+    }
     Err(error) => {
-      println!("Error ocurred: {:?}", error);
-      std::process::exit(-1);
+      eprintln!("Error ocurred: {:?}", error);
+      std::process::exit(1);
     }
   };
 
+  let initial_message = client
+    .recv_message()
+    .expect("Never received the initial SHIP message");
+  let ship_abi = init_abi_definitions(&initial_message).unwrap();
+  println!(">>> SHIP Abi \n{}", ship_abi);
 
-  let message: OwnedMessage = client.recv_message().unwrap();
-  println!("Recv: {:?}", message);
-
-  client.send_message(&Message::text("['get_status_request_v0', {}]")).unwrap();
-
-  // for message in client.incoming_messages() {
-  //   let message: OwnedMessage = message.unwrap();
-  //   println!("Recv: {:?}", message);
-  // }
+  let msg = request_blocks_message();
+  println!("msg is {:?}", msg);
+  client.send_message(&msg).unwrap();
+  println!("msg sent to server!");
+  for message in client.incoming_messages() {
+    let message: OwnedMessage = message.unwrap();
+    println!("Recv: {:?}", message);
+  }
 
   client.shutdown().unwrap();
+}
+
+fn init_abi_definitions(message: &OwnedMessage) -> Result<Value, &'static str> {
+  let text = match message {
+    OwnedMessage::Text(t) => t,
+    _ => return Err("missing initial message text"),
+  };
+
+  let value = match serde_json::from_str(text) {
+    Ok(v) => v,
+    _ => return Err("fail to parse the state history initial abi"),
+  };
+
+  Ok(value)
+}
+
+fn request_blocks_message<'a>() -> Message<'a> {
+  let request_json = r#"[
+    "get_blocks_request_v0",
+    {
+      "start_block_num": 1,
+      "end_block_num": 10,
+      "max_messages_in_flight": 4294967295,
+      "have_positions": [],
+      "irreversible_only": false,
+      "fetch_block": true,
+      "fetch_traces": true,
+      "fetch_deltas": true
+    }
+  ]"#;
+
+  println!("request json {}", request_json);
+  let msg = Message::text(request_json);
+  println!("msg created");
+  msg
 }
