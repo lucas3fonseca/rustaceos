@@ -57,21 +57,24 @@ fn init_abi_definitions(message: &OwnedMessage) -> Result<Value, &'static str> {
 }
 
 fn request_blocks_message<'a>() -> Message<'a> {
-  let request_json = r#"[
-    "get_blocks_request_v0",
-    {
-      "start_block_num": 1,
-      "end_block_num": 10,
-      "max_messages_in_flight": 4294967295,
-      "have_positions": [],
-      "irreversible_only": false,
-      "fetch_block": true,
-      "fetch_traces": true,
-      "fetch_deltas": true
-    }
-  ]"#;
+  // let request_json = r#"[
+  //   "get_blocks_request_v0",
+  //   {
+  //     "start_block_num": 1,
+  //     "end_block_num": 10,
+  //     "max_messages_in_flight": 4294967295,
+  //     "have_positions": [],
+  //     "irreversible_only": false,
+  //     "fetch_block": true,
+  //     "fetch_traces": true,
+  //     "fetch_deltas": true
+  //   }
+  // ]"#;
 
-  println!("request json {}", request_json);
+  // println!("request json {}", request_json);
+
+  let request_name = "get_status_request_v0"
+
   let msg = Message::text(request_json);
   println!("msg created");
   msg

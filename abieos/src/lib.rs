@@ -1,3 +1,8 @@
+pub struct Variant {
+    pub name: String,
+    pub types: Vec<String>,
+}
+
 #[cfg(test)]
 mod tests {
     #[test]
