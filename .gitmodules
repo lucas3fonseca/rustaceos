@@ -1,0 +1,3 @@
+[submodule "abieos/external/abieos"]
+	path = abieos/external/abieos
+	url = https://github.com/EOSIO/abieos
