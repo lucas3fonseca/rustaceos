@@ -1,16 +1,16 @@
 use abieos::Variant;
 
-pub static ShipRequests = Variant {
-  name = "request",
-  types = vec![
-    "get_status_request_v0",
-    "get_blocks_request_v0",
-    "get_blocks_ack_request_v0"
-  ]
-}
+// pub static ShipRequests: Variant = Variant {
+//   name: "request",
+//   types: vec![
+//     "get_status_request_v0",
+//     "get_blocks_request_v0",
+//     "get_blocks_ack_request_v0"
+//   ],
+// };
 
-pub trait AbiSerializer<T> {
-  serialize(native_struct: &T) -> u8[]
+pub trait AbiSerializer {
+  fn serialize(&self) -> Vec<u8>;
 }
 
 pub struct BlockPosition {
@@ -19,6 +19,15 @@ pub struct BlockPosition {
 }
 
 pub struct GetStatusRequest;
+
+impl AbiSerializer for GetStatusRequest {
+  fn serialize(&self) -> Vec<u8> {
+    let mut buffer = Vec::new();
+    let get_status_variant_index = 0;
+    abieos::push_varuint32(&mut buffer, get_status_variant_index);
+    buffer
+  }
+}
 
 pub struct GetBlocksRequest {
   pub start_block_num: u32,

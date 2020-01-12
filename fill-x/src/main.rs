@@ -4,6 +4,9 @@ use serde_json::Value;
 use websocket::{ClientBuilder, Message, OwnedMessage};
 
 mod serialize;
+mod requests;
+
+use crate::requests::AbiSerializer;
 
 static ADDRESS: &str = "http://localhost:8080";
 static INITIAL_BLOCK: u32 = 1;
@@ -73,9 +76,12 @@ fn request_blocks_message<'a>() -> Message<'a> {
 
   // println!("request json {}", request_json);
 
-  let request_name = "get_status_request_v0"
+  // let request_name = "get_status_request_v0";
+  let request = requests::GetStatusRequest{};
+  let request_msg = request.serialize();
 
-  let msg = Message::text(request_json);
-  println!("msg created");
+  let msg = Message::binary(request_msg);
+  // let msg = Message::text(request_json);
+  println!("msg created {:?}", msg);
   msg
 }

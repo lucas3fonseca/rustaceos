@@ -1,6 +1,6 @@
-pub struct Variant {
-    pub name: String,
-    pub types: Vec<String>,
+pub struct Variant<'a> {
+    pub name: &'a str,
+    pub types: Vec<&'a str>,
 }
 
 pub fn push_varuint32(bin: &mut Vec<u8>, v: u32) {
