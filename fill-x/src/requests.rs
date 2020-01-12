@@ -9,6 +9,10 @@ pub static ShipRequests = Variant {
   ]
 }
 
+pub trait AbiSerializer<T> {
+  serialize(native_struct: &T) -> u8[]
+}
+
 pub struct BlockPosition {
   block_num: u32,
   block_id: String,
