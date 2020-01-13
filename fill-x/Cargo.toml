@@ -12,3 +12,4 @@ env_logger = "0.7"
 websocket = "*"
 serde_json = "1.0.44"
 abieos = { path = "../abieos" }
+bytes = "0.5.3"

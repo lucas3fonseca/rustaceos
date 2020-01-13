@@ -6,7 +6,7 @@ use websocket::{ClientBuilder, Message, OwnedMessage};
 mod serialize;
 mod requests;
 
-use crate::requests::AbiSerializer;
+use crate::requests::{AbiSerializer, AbiDeserializer};
 
 static ADDRESS: &str = "http://localhost:8080";
 static INITIAL_BLOCK: u32 = 1;
@@ -39,7 +39,11 @@ fn main() {
   println!("msg sent to server!");
   for message in client.incoming_messages() {
     let message: OwnedMessage = message.unwrap();
-    println!("Recv: {:?}", message);
+    if let OwnedMessage::Binary(bin) = message {
+      println!("Recv Binary: {:?}", bin);
+      let response = requests::GetStatusResponse::deserialize(bin);
+      println!("Status response {:?}", response);
+    }
   }
 
   client.shutdown().unwrap();
