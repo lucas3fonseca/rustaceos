@@ -1,5 +1,13 @@
 use std::fmt;
 
+pub trait AbiSerializer {
+    fn serialize(&self) -> Vec<u8>;
+}
+
+pub trait AbiDeserializer {
+    fn deserialize(bin: &Vec<u8>) -> Self;
+}
+
 pub struct Variant<'a> {
     pub name: &'a str,
     pub types: Vec<&'a str>,
