@@ -1,6 +1,6 @@
 use bytes::Buf;
 
-// use abieos::Variant;
+use abieos::Checksum256;
 
 // pub static ShipRequests: Variant = Variant {
 //   name: "request",
@@ -14,7 +14,7 @@ use bytes::Buf;
 #[derive(Debug)]
 pub struct BlockPosition {
   pub block_num: u32,
-  pub block_id: String,
+  pub block_id: Checksum256,
 }
 
 pub trait AbiSerializer {
@@ -52,7 +52,9 @@ impl AbiDeserializer for GetStatusResponse {
     let mut buf = &bin[..];
 
     let variant_index = buf.get_u8();
-    if variant_index != 0 { panic!("the response does not refer to get_status_response_v0 variant"); }
+    if variant_index != 0 {
+      panic!("the response does not refer to get_status_response_v0 variant");
+    }
 
     let block_num = buf.get_u32_le();
     println!("blocknum is {}", block_num);
@@ -60,12 +62,14 @@ impl AbiDeserializer for GetStatusResponse {
     let mut block_id_bytes = [0; 32];
     buf.copy_to_slice(&mut block_id_bytes);
     println!("block_id_bytes is {:?}", block_id_bytes);
-    let block_position = BlockPosition { block_num, block_id: String::from("0") };
+    let block_id = Checksum256{ value: block_id_bytes };
+    let block_position = BlockPosition { block_num, block_id };
 
     let block_num = buf.get_u32_le();
     let mut block_id_bytes = [0; 32];
     buf.copy_to_slice(&mut block_id_bytes);
-    let last_irreversible = BlockPosition { block_num, block_id: String::from("0") };
+    let block_id = Checksum256{ value: block_id_bytes };
+    let last_irreversible = BlockPosition { block_num, block_id };
 
     let trace_begin_block = buf.get_u32_le();
     let trace_end_block = buf.get_u32_le();
