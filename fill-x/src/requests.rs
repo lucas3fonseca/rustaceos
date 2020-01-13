@@ -120,7 +120,7 @@ impl AbiSerializer for GetBlocksRequest {
         buf.put_u32_le(self.end_block_num);
         buf.put_u32_le(self.max_messages_in_flight);
 
-        buf.put_u32_le(self.have_positions.len() as u32);
+        abieos::push_varuint32(&mut buf, self.have_positions.len() as u32);
         for pos in &self.have_positions {
             buf.put_u32_le(pos.block_num);
             for v in &pos.block_id.value {

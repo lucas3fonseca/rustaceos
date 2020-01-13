@@ -84,12 +84,9 @@ fn request_status_message<'a>() -> Message<'a> {
 fn request_blocks_message<'a>() -> Message<'a> {
     let request = requests::GetBlocksRequest {
         start_block_num: 1,
-        end_block_num: 4294967295,
+        end_block_num: 5,
         max_messages_in_flight: 4294967295,
-        have_positions: vec![BlockPosition {
-            block_num: 1,
-            block_id: Checksum256 { value: [0; 32] },
-        }],
+        have_positions: vec![],
         irreversible_only: false,
         fetch_block: true,
         fetch_traces: true,
