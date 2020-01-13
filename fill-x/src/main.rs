@@ -6,7 +6,8 @@ use websocket::{ClientBuilder, Message, OwnedMessage};
 mod requests;
 mod serialize;
 
-use crate::requests::{AbiDeserializer, AbiSerializer};
+use crate::requests::{AbiDeserializer, AbiSerializer, BlockPosition};
+use abieos::Checksum256;
 
 static ADDRESS: &str = "http://localhost:8080";
 
@@ -32,16 +33,27 @@ fn main() {
     let ship_abi = init_abi_definitions(&initial_message).unwrap();
     println!(">>> SHIP Abi \n{}", ship_abi);
 
-    let msg = request_blocks_message();
-    println!("msg is {:?}", msg);
-    client.send_message(&msg).unwrap();
-    println!("msg sent to server!");
+    let request_status = request_status_message();
+    client.send_message(&request_status).unwrap();
+    let status_message = client
+        .recv_message()
+        .expect("Never received the SHIP status message");
+    print_ship_status(&status_message);
+
+    let request_blocks = request_blocks_message();
+    client.send_message(&request_blocks).unwrap();
+
+    let mut blocks = 0;
     for message in client.incoming_messages() {
         let message: OwnedMessage = message.unwrap();
         if let OwnedMessage::Binary(bin) = message {
-            println!("Recv Binary: {:?}", bin);
-            let response = requests::GetStatusResponse::deserialize(bin);
-            println!("Status response {:?}", response);
+            println!("Recv Block Binary: {:?}", bin);
+        }
+
+        // todo: remove after tests
+        blocks += 1;
+        if blocks >= 10 {
+            break;
         }
     }
 
@@ -62,12 +74,33 @@ fn init_abi_definitions(message: &OwnedMessage) -> Result<Value, &'static str> {
     Ok(value)
 }
 
-fn request_blocks_message<'a>() -> Message<'a> {
+fn request_status_message<'a>() -> Message<'a> {
     let request = requests::GetStatusRequest {};
-    let request_msg = request.serialize();
+    Message::binary(request.serialize())
+}
 
-    let msg = Message::binary(request_msg);
-    // let msg = Message::text(request_json);
-    println!("msg created {:?}", msg);
-    msg
+fn request_blocks_message<'a>() -> Message<'a> {
+    let request = requests::GetBlocksRequest {
+        start_block_num: 1,
+        end_block_num: 4294967295,
+        max_messages_in_flight: 4294967295,
+        have_positions: vec![BlockPosition {
+            block_num: 1,
+            block_id: Checksum256 { value: [0; 32] },
+        }],
+        irreversible_only: false,
+        fetch_block: true,
+        fetch_traces: true,
+        fetch_deltas: true,
+    };
+    Message::binary(request.serialize())
+}
+
+fn print_ship_status(message: &OwnedMessage) {
+    if let OwnedMessage::Binary(bin) = message {
+        let status_response = requests::GetStatusResponse::deserialize(bin);
+        println!("Status response {:?}", status_response);
+    } else {
+        panic!("Fail to parse the SHIP status message");
+    }
 }

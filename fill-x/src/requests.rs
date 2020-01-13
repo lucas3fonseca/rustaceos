@@ -1,14 +1,14 @@
-use bytes::Buf;
+use bytes::{Buf, BufMut};
 
 use abieos::Checksum256;
 
 // to use in the future when we generalize the requests functions
 // pub static ShipRequests: Variant = Variant {
 //   name: "request",
-//   types: vec![
+//   types: [
 //     "get_status_request_v0",
 //     "get_blocks_request_v0",
-//     "get_blocks_ack_request_v0"
+//     "get_blocks_ack_request_v0",
 //   ],
 // };
 
@@ -23,7 +23,7 @@ pub trait AbiSerializer {
 }
 
 pub trait AbiDeserializer {
-    fn deserialize(bin: Vec<u8>) -> Self;
+    fn deserialize(bin: &Vec<u8>) -> Self;
 }
 
 pub struct GetStatusRequest;
@@ -31,8 +31,11 @@ pub struct GetStatusRequest;
 impl AbiSerializer for GetStatusRequest {
     fn serialize(&self) -> Vec<u8> {
         let mut buffer = Vec::new();
+
+        // todo: find it in static requests variant
         let get_status_variant_index = 0;
         abieos::push_varuint32(&mut buffer, get_status_variant_index);
+
         buffer
     }
 }
@@ -48,7 +51,7 @@ pub struct GetStatusResponse {
 }
 
 impl AbiDeserializer for GetStatusResponse {
-    fn deserialize(bin: Vec<u8>) -> GetStatusResponse {
+    fn deserialize(bin: &Vec<u8>) -> GetStatusResponse {
         let mut buf = &bin[..];
 
         let variant_index = buf.get_u8();
@@ -57,11 +60,8 @@ impl AbiDeserializer for GetStatusResponse {
         }
 
         let block_num = buf.get_u32_le();
-        println!("blocknum is {}", block_num);
-
         let mut block_id_bytes = [0; 32];
         buf.copy_to_slice(&mut block_id_bytes);
-        println!("block_id_bytes is {:?}", block_id_bytes);
         let block_id = Checksum256 {
             value: block_id_bytes,
         };
@@ -106,4 +106,33 @@ pub struct GetBlocksRequest {
     pub fetch_block: bool,
     pub fetch_traces: bool,
     pub fetch_deltas: bool,
+}
+
+impl AbiSerializer for GetBlocksRequest {
+    fn serialize(&self) -> Vec<u8> {
+        let mut buf = vec![];
+
+        // todo: find it in static requests variant
+        let get_status_variant_index = 1;
+        buf.put_u8(get_status_variant_index);
+
+        buf.put_u32_le(self.start_block_num);
+        buf.put_u32_le(self.end_block_num);
+        buf.put_u32_le(self.max_messages_in_flight);
+
+        buf.put_u32_le(self.have_positions.len() as u32);
+        for pos in &self.have_positions {
+            buf.put_u32_le(pos.block_num);
+            for v in &pos.block_id.value {
+                buf.put_u8(*v);
+            }
+        }
+
+        buf.put_u8(if self.irreversible_only { 1 } else { 0 });
+        buf.put_u8(if self.fetch_block { 1 } else { 0 });
+        buf.put_u8(if self.fetch_traces { 1 } else { 0 });
+        buf.put_u8(if self.fetch_deltas { 1 } else { 0 });
+
+        buf
+    }
 }
