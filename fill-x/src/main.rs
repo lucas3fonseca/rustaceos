@@ -3,11 +3,12 @@ use env_logger;
 use serde_json::Value;
 use websocket::{ClientBuilder, Message, OwnedMessage};
 
-mod requests;
 mod serialize;
 
-use crate::requests::{AbiDeserializer, AbiSerializer, BlockPosition};
-use abieos::Checksum256;
+use abieos::{AbiDeserializer, AbiSerializer};
+use state_history::{
+    GetBlocksRequestV0, GetBlocksResultV0, GetStatusRequestV0, GetStatusResponseV0,
+};
 
 static ADDRESS: &str = "http://localhost:8080";
 
@@ -48,7 +49,7 @@ fn main() {
         let message: OwnedMessage = message.unwrap();
         if let OwnedMessage::Binary(bin) = message {
             println!("Recv Block Binary: {:?}", bin);
-            let block_response = requests::GetBlocksResponse::deserialize(&bin);
+            let block_response = GetBlocksResultV0::deserialize(&bin);
             println!("Block response {:?}", block_response);
         }
 
@@ -77,12 +78,12 @@ fn init_abi_definitions(message: &OwnedMessage) -> Result<Value, &'static str> {
 }
 
 fn request_status_message<'a>() -> Message<'a> {
-    let request = requests::GetStatusRequest {};
+    let request = GetStatusRequestV0 {};
     Message::binary(request.serialize())
 }
 
 fn request_blocks_message<'a>() -> Message<'a> {
-    let request = requests::GetBlocksRequest {
+    let request = GetBlocksRequestV0 {
         start_block_num: 1,
         end_block_num: 5,
         max_messages_in_flight: 4294967295,
@@ -97,7 +98,7 @@ fn request_blocks_message<'a>() -> Message<'a> {
 
 fn print_ship_status(message: &OwnedMessage) {
     if let OwnedMessage::Binary(bin) = message {
-        let status_response = requests::GetStatusResponse::deserialize(bin);
+        let status_response = GetStatusResponseV0::deserialize(bin);
         println!("Status response {:?}", status_response);
     } else {
         panic!("Fail to parse the SHIP status message");

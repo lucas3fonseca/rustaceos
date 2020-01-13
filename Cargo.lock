@@ -134,10 +134,10 @@ name = "fill-x"
 version = "0.1.0"
 dependencies = [
  "abieos 0.1.0",
- "bytes 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "env_logger 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.44 (registry+https://github.com/rust-lang/crates.io-index)",
+ "state_history 0.1.0",
  "websocket 0.24.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -736,6 +736,14 @@ dependencies = [
 name = "smallvec"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "state_history"
+version = "0.1.0"
+dependencies = [
+ "abieos 0.1.0",
+ "bytes 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "tempfile"
