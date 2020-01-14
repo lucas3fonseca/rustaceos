@@ -52,6 +52,10 @@ fn main() {
             let mut bin_bytes = BytesMut::from(&bin[..]);
             let block_response = GetBlocksResultV0::deserialize(&mut bin_bytes);
             println!("\n>>> {:?}", block_response);
+            match block_response.traces {
+              Some(_) => std::process::exit(0),
+              None => continue,
+            };
         }
     }
 
