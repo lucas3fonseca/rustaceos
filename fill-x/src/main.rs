@@ -1,4 +1,5 @@
 // #[macro_use] extern crate log;
+use bytes::BytesMut;
 use env_logger;
 use serde_json::Value;
 use websocket::{ClientBuilder, Message, OwnedMessage};
@@ -48,15 +49,9 @@ fn main() {
     for message in client.incoming_messages() {
         let message: OwnedMessage = message.unwrap();
         if let OwnedMessage::Binary(bin) = message {
-            println!("Recv Block Binary: {:?}", bin);
-            let block_response = GetBlocksResultV0::deserialize(&bin);
-            println!("Block response {:?}", block_response);
-        }
-
-        // todo: remove after tests
-        blocks += 1;
-        if blocks >= 10 {
-            break;
+            let mut bin_bytes = BytesMut::from(&bin[..]);
+            let block_response = GetBlocksResultV0::deserialize(&mut bin_bytes);
+            println!("\n>>> {:?}", block_response);
         }
     }
 
@@ -85,7 +80,7 @@ fn request_status_message<'a>() -> Message<'a> {
 fn request_blocks_message<'a>() -> Message<'a> {
     let request = GetBlocksRequestV0 {
         start_block_num: 1,
-        end_block_num: 5,
+        end_block_num: 4294967295,
         max_messages_in_flight: 4294967295,
         have_positions: vec![],
         irreversible_only: false,
@@ -98,7 +93,8 @@ fn request_blocks_message<'a>() -> Message<'a> {
 
 fn print_ship_status(message: &OwnedMessage) {
     if let OwnedMessage::Binary(bin) = message {
-        let status_response = GetStatusResponseV0::deserialize(bin);
+        let mut bin_bytes = BytesMut::from(&bin[..]);
+        let status_response = GetStatusResponseV0::deserialize(&mut bin_bytes);
         println!("Status response {:?}", status_response);
     } else {
         panic!("Fail to parse the SHIP status message");

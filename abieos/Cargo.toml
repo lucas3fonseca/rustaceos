@@ -8,5 +8,6 @@ edition = "2018"
 #[build-dependencies]
 #bindgen = "0.51.1"
 
-#[dependencies]
+[dependencies]
+bytes = "0.5.3"
 #bindgen = "0.51.1"
