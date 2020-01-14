@@ -1,4 +1,8 @@
-use crate::blocks::{BlockPosition, BlockHeader};
+use crate::blocks::{
+  BlockPosition,
+  BlockHeader,
+  ActionTrace,
+};
 use abieos::{AbiDeserializer};
 use bytes::{Buf, BytesMut};
 
@@ -87,6 +91,8 @@ impl AbiDeserializer for GetBlocksResultV0 {
         } else {
             None
         };
+
+        let has_traces = buf.get_u8() == 1;
 
         GetBlocksResultV0 {
             head,

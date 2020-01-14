@@ -31,6 +31,58 @@ pub struct BlockHeader {
     pub header_extensions: Vec<Extension>,
 }
 
+#[derive(Debug)]
+pub struct ActionTrace {
+  pub action_ordinal: u32,
+  pub creator_action_ordinal: u32,
+  pub receipt: Option<ActionReceipt>,
+  pub receiver: u64, // name
+  pub act: Action,
+  pub context_free: bool,
+  pub elapsed: i64,
+  pub console: String,
+  pub account_ram_deltas: Vec<AccountDelta>,
+  pub except: Option<String>,
+  pub error_code: Option<u64>,
+}
+
+#[derive(Debug)]
+pub struct ActionReceipt {
+  pub receiver: u64, // name
+  pub act_digest: Checksum256,
+  pub global_sequence: u64,
+  pub recv_sequence: u64,
+  pub auth_sequence: Vec<AccountAuthSequence>,
+  pub code_sequence: u32,
+  pub abi_sequence: u32,
+}
+
+#[derive(Debug)]
+pub struct AccountAuthSequence {
+  pub account: u64, // name
+  pub sequence: u64,
+}
+
+#[derive(Debug)]
+pub struct Action {
+  pub account: u64, // name
+  pub name: u64, // name
+  pub authorization: Vec<PermissionLevel>,
+  pub data: Vec<u8>,
+}
+
+#[derive(Debug)]
+pub struct PermissionLevel {
+  pub actor: u64, // name
+  pub permission: u64, // name
+}
+
+#[derive(Debug)]
+pub struct AccountDelta {
+  pub account: u64, // name
+  pub delta: i64,
+}
+
 impl AbiDeserializer for BlockHeader {
     fn deserialize(buf: &mut BytesMut) -> BlockHeader {
         let timestamp = buf.get_u32_le();
