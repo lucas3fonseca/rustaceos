@@ -1,10 +1,11 @@
+use bytes::{BytesMut, Buf};
 use abieos::{
+  AbiDeserializer,
   Checksum256,
   TimePointSec,
   Signature,
   PermissionLevel,
 };
-
 use crate::blocks::Extension;
 
 #[derive(Debug)]
@@ -22,6 +23,35 @@ pub struct TransactionTraceV0 {
   pub error_code: Option<u64>,
   pub failed_dtrx_trace: Option<Box<TransactionTraceV0>>,
   pub partial: Option<PartialTransactionV0>,
+}
+
+impl AbiDeserializer for TransactionTraceV0 {
+  fn deserialize(buf: &mut BytesMut) -> TransactionTraceV0 {
+    let id = abieos::read_checksum256(buf);
+    let status = buf.get_u8();
+    let cpu_usage_us = buf.get_u32_le();
+    let net_usage_words = abieos::read_varuint32(buf).unwrap();
+    let elapsed = buf.get_i64_le();
+    let net_usage = buf.get_u64_le();
+    let scheduled = buf.get_u8() != 0;
+    let action_traces = vec![];
+
+    TransactionTraceV0 {
+      id,
+      status,
+      cpu_usage_us,
+      net_usage_words,
+      elapsed,
+      net_usage,
+      scheduled,
+      action_traces,
+      account_ram_delta: None,
+      except: None,
+      error_code: None,
+      failed_dtrx_trace: None,
+      partial: None,
+    }
+  }
 }
 
 #[derive(Debug)]

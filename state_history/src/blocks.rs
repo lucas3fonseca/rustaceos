@@ -3,9 +3,6 @@ use abieos::{
   AbiDeserializer,
   Checksum256,
   PublicKey,
-  TimePointSec,
-  Signature,
-  PermissionLevel,
 };
 
 #[derive(Debug)]
