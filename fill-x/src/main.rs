@@ -51,13 +51,7 @@ fn main() {
         if let OwnedMessage::Binary(bin) = message {
             let mut bin_bytes = BytesMut::from(&bin[..]);
             let block_response = GetBlocksResultV0::deserialize(&mut bin_bytes);
-            println!("\n>>> Block response {:?}", block_response);
-        }
-
-        // todo: remove after tests
-        blocks += 1;
-        if blocks >= 10 {
-            break;
+            println!("\n>>> {:?}", block_response);
         }
     }
 
@@ -86,7 +80,7 @@ fn request_status_message<'a>() -> Message<'a> {
 fn request_blocks_message<'a>() -> Message<'a> {
     let request = GetBlocksRequestV0 {
         start_block_num: 1,
-        end_block_num: 5,
+        end_block_num: 4294967295,
         max_messages_in_flight: 4294967295,
         have_positions: vec![],
         irreversible_only: false,
