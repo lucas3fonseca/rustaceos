@@ -13,29 +13,15 @@ pub struct GetStatusResponseV0 {
 }
 
 impl AbiDeserializer for GetStatusResponseV0 {
-    fn deserialize(bin: &Vec<u8>) -> GetStatusResponseV0 {
-        let mut buf = BytesMut::from(&bin[..]);
-
-        let variant_index = abieos::read_varuint32(&mut buf)
+    fn deserialize(buf: &mut BytesMut) -> GetStatusResponseV0 {
+        let variant_index = abieos::read_varuint32(buf)
             .expect("fail to read the get_status_response_v0 variant");
         if variant_index != 0 {
             panic!("the response does not refer to get_status_response_v0 variant");
         }
 
-        let block_num = buf.get_u32_le();
-        let block_id = abieos::read_checksum256(&mut buf);
-        let block_position = BlockPosition {
-            block_num,
-            block_id,
-        };
-
-        let block_num = buf.get_u32_le();
-        let block_id = abieos::read_checksum256(&mut buf);
-        let last_irreversible = BlockPosition {
-            block_num,
-            block_id,
-        };
-
+        let block_position = BlockPosition::deserialize(buf);
+        let last_irreversible = BlockPosition::deserialize(buf);
         let trace_begin_block = buf.get_u32_le();
         let trace_end_block = buf.get_u32_le();
         let chain_state_begin_block = buf.get_u32_le();
@@ -64,37 +50,19 @@ pub struct GetBlocksResultV0 {
 }
 
 impl AbiDeserializer for GetBlocksResultV0 {
-    fn deserialize(bin: &Vec<u8>) -> GetBlocksResultV0 {
-        let mut buf = BytesMut::from(&bin[..]);
-
-        let variant_index = abieos::read_varuint32(&mut buf)
+    fn deserialize(buf: &mut BytesMut) -> GetBlocksResultV0 {
+        let variant_index = abieos::read_varuint32(buf)
             .expect("fail to read the get_blocks_result_v0 variant");
         if variant_index != 1 {
             panic!("the response does not refer to get_blocks_result_v0 variant");
         }
 
-        let block_num = buf.get_u32_le();
-        let block_id = abieos::read_checksum256(&mut buf);
-        let head = BlockPosition {
-            block_num,
-            block_id,
-        };
-
-        let block_num = buf.get_u32_le();
-        let block_id = abieos::read_checksum256(&mut buf);
-        let last_irreversible = BlockPosition {
-            block_num,
-            block_id,
-        };
+        let head = BlockPosition::deserialize(buf);
+        let last_irreversible = BlockPosition::deserialize(buf);
 
         let this_block_present = buf.get_u8() == 1;
         let this_block = if this_block_present {
-            let block_num = buf.get_u32_le();
-            let block_id = abieos::read_checksum256(&mut buf);
-            let block = BlockPosition {
-                block_num,
-                block_id,
-            };
+            let block = BlockPosition::deserialize(buf);
             Some(block)
         } else {
             None
@@ -102,12 +70,7 @@ impl AbiDeserializer for GetBlocksResultV0 {
 
         let prev_block_present = buf.get_u8() == 1;
         let prev_block = if prev_block_present {
-            let block_num = buf.get_u32_le();
-            let block_id = abieos::read_checksum256(&mut buf);
-            let block = BlockPosition {
-                block_num,
-                block_id,
-            };
+            let block = BlockPosition::deserialize(buf);
             Some(block)
         } else {
             None

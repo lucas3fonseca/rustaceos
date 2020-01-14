@@ -6,12 +6,29 @@ pub trait AbiSerializer {
 }
 
 pub trait AbiDeserializer {
-    fn deserialize(bin: &Vec<u8>) -> Self;
+    fn deserialize(buf: &mut BytesMut) -> Self;
 }
 
 pub struct Variant<'a> {
     pub name: &'a str,
     pub types: Vec<&'a str>,
+}
+
+#[derive(Debug)]
+pub enum KeyType {
+    K1 = 0,
+    R1 = 1,
+}
+
+pub struct PublicKey {
+    pub r#type: KeyType,
+    pub data: [u8; 33],
+}
+
+impl fmt::Debug for PublicKey {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "PubKey {:?} {:?}", self.r#type, &self.data[..32])
+    }
 }
 
 pub struct Checksum256 {
