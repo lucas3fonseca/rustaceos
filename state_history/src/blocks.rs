@@ -1,5 +1,9 @@
 use bytes::{BytesMut, Buf};
-use abieos::{AbiDeserializer, Checksum256, PublicKey};
+use abieos::{
+  AbiDeserializer,
+  Checksum256,
+  PublicKey,
+};
 
 #[derive(Debug)]
 pub struct BlockPosition {

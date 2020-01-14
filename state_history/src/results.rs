@@ -1,4 +1,10 @@
-use crate::blocks::{BlockPosition, BlockHeader};
+use crate::blocks::{
+  BlockPosition,
+  BlockHeader,
+};
+use crate::actions::{
+  TransactionTraceV0,
+};
 use abieos::{AbiDeserializer};
 use bytes::{Buf, BytesMut};
 
@@ -45,7 +51,7 @@ pub struct GetBlocksResultV0 {
     pub this_block: Option<BlockPosition>,
     pub prev_block: Option<BlockPosition>,
     pub block: Option<BlockHeader>,
-    pub traces: Option<Vec<u8>>,
+    pub traces: Option<TransactionTraceV0>,
     pub deltas: Option<Vec<u8>>,
 }
 
@@ -88,13 +94,25 @@ impl AbiDeserializer for GetBlocksResultV0 {
             None
         };
 
+        let has_traces = buf.get_u8() == 1;
+        let traces = if has_traces {
+          let trace_length = abieos::read_varuint32(buf)
+              .expect("fail to get trace length");
+          let mut trace_bytes = Vec::with_capacity(trace_length as usize);
+          buf.copy_to_slice(&mut trace_bytes[..]);
+          let traces = TransactionTraceV0::deserialize(buf);
+          Some(traces)
+        } else {
+          None
+        };
+
         GetBlocksResultV0 {
             head,
             last_irreversible,
             this_block,
             prev_block,
             block,
-            traces: None,
+            traces,
             deltas: None,
         }
     }
