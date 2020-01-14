@@ -1,6 +1,8 @@
 use crate::blocks::{
   BlockPosition,
   BlockHeader,
+};
+use crate::actions::{
   TransactionTraceV0,
 };
 use abieos::{AbiDeserializer};

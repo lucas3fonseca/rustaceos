@@ -15,6 +15,23 @@ pub struct Variant<'a> {
 }
 
 #[derive(Debug)]
+pub struct TimePointSec {
+  utc_seconds: u32,
+}
+
+#[derive(Debug)]
+pub struct Signature {
+  k1r1_size: u32, // always 65
+  key_type: KeyType, // always k1
+}
+
+#[derive(Debug)]
+pub struct PermissionLevel {
+  pub actor: u64, // name
+  pub permission: u64, // name
+}
+
+#[derive(Debug)]
 pub enum KeyType {
     K1 = 0,
     R1 = 1,
