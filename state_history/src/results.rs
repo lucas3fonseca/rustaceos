@@ -97,7 +97,7 @@ impl AbiDeserializer for GetBlocksResultV0 {
         let has_traces = buf.get_u8() == 1;
         let traces = if has_traces {
           let trace_length = abieos::read_varuint32(buf)
-              .expect("fail to get trance length");
+              .expect("fail to get trace length");
           let mut trace_bytes = Vec::with_capacity(trace_length as usize);
           buf.copy_to_slice(&mut trace_bytes[..]);
           let traces = TransactionTraceV0::deserialize(buf);
