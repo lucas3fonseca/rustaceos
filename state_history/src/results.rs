@@ -1,5 +1,5 @@
-use crate::blocks::BlockPosition;
-use abieos::{AbiDeserializer, Checksum256};
+use crate::blocks::{BlockPosition, BlockHeader};
+use abieos::{AbiDeserializer};
 use bytes::{Buf, BytesMut};
 
 #[derive(Debug)]
@@ -44,7 +44,7 @@ pub struct GetBlocksResultV0 {
     pub last_irreversible: BlockPosition,
     pub this_block: Option<BlockPosition>,
     pub prev_block: Option<BlockPosition>,
-    pub block: Option<Vec<u8>>,
+    pub block: Option<BlockHeader>,
     pub traces: Option<Vec<u8>>,
     pub deltas: Option<Vec<u8>>,
 }
@@ -76,12 +76,24 @@ impl AbiDeserializer for GetBlocksResultV0 {
             None
         };
 
+        let has_block = buf.get_u8() == 1;
+        let block = if has_block {
+            let block_header_length = abieos::read_varuint32(buf)
+                .expect("fail to get block header bytes");
+            let mut block_header_bytes = Vec::with_capacity(block_header_length as usize);
+            buf.copy_to_slice(&mut block_header_bytes[..]);
+            let block_header = BlockHeader::deserialize(buf);
+            Some(block_header)
+        } else {
+            None
+        };
+
         GetBlocksResultV0 {
             head,
             last_irreversible,
             this_block,
             prev_block,
-            block: None,
+            block,
             traces: None,
             deltas: None,
         }
