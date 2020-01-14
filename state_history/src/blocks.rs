@@ -48,6 +48,11 @@ impl AbiDeserializer for BlockHeader {
             None
         };
 
+        let extensions_length = abieos::read_varuint32(buf).unwrap();
+        if extensions_length > 0 {
+            panic!("todo: parse extensions");
+        }
+
         BlockHeader {
             timestamp,
             producer,
