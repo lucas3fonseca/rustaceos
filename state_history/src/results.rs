@@ -1,7 +1,7 @@
 use crate::blocks::{
   BlockPosition,
   BlockHeader,
-  ActionTrace,
+  TransactionTraceV0,
 };
 use abieos::{AbiDeserializer};
 use bytes::{Buf, BytesMut};
