@@ -48,9 +48,8 @@ fn main() {
     for message in client.incoming_messages() {
         let message: OwnedMessage = message.unwrap();
         if let OwnedMessage::Binary(bin) = message {
-            println!("Recv Block Binary: {:?}", bin);
             let block_response = GetBlocksResultV0::deserialize(&bin);
-            println!("Block response {:?}", block_response);
+            println!("\n>>> Block response {:?}", block_response);
         }
 
         // todo: remove after tests

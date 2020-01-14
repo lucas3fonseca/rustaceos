@@ -23,22 +23,14 @@ impl AbiDeserializer for GetStatusResponseV0 {
         }
 
         let block_num = buf.get_u32_le();
-        let mut block_id_bytes = [0; 32];
-        buf.copy_to_slice(&mut block_id_bytes);
-        let block_id = Checksum256 {
-            value: block_id_bytes,
-        };
+        let block_id = abieos::read_checksum256(&mut buf);
         let block_position = BlockPosition {
             block_num,
             block_id,
         };
 
         let block_num = buf.get_u32_le();
-        let mut block_id_bytes = [0; 32];
-        buf.copy_to_slice(&mut block_id_bytes);
-        let block_id = Checksum256 {
-            value: block_id_bytes,
-        };
+        let block_id = abieos::read_checksum256(&mut buf);
         let last_irreversible = BlockPosition {
             block_num,
             block_id,
@@ -82,22 +74,14 @@ impl AbiDeserializer for GetBlocksResultV0 {
         }
 
         let block_num = buf.get_u32_le();
-        let mut block_id_bytes = [0; 32];
-        buf.copy_to_slice(&mut block_id_bytes);
-        let block_id = Checksum256 {
-            value: block_id_bytes,
-        };
+        let block_id = abieos::read_checksum256(&mut buf);
         let head = BlockPosition {
             block_num,
             block_id,
         };
 
         let block_num = buf.get_u32_le();
-        let mut block_id_bytes = [0; 32];
-        buf.copy_to_slice(&mut block_id_bytes);
-        let block_id = Checksum256 {
-            value: block_id_bytes,
-        };
+        let block_id = abieos::read_checksum256(&mut buf);
         let last_irreversible = BlockPosition {
             block_num,
             block_id,
@@ -106,11 +90,7 @@ impl AbiDeserializer for GetBlocksResultV0 {
         let this_block_present = buf.get_u8() == 1;
         let this_block = if this_block_present {
             let block_num = buf.get_u32_le();
-            let mut block_id_bytes = [0; 32];
-            buf.copy_to_slice(&mut block_id_bytes);
-            let block_id = Checksum256 {
-                value: block_id_bytes,
-            };
+            let block_id = abieos::read_checksum256(&mut buf);
             let block = BlockPosition {
                 block_num,
                 block_id,
@@ -123,11 +103,7 @@ impl AbiDeserializer for GetBlocksResultV0 {
         let prev_block_present = buf.get_u8() == 1;
         let prev_block = if prev_block_present {
             let block_num = buf.get_u32_le();
-            let mut block_id_bytes = [0; 32];
-            buf.copy_to_slice(&mut block_id_bytes);
-            let block_id = Checksum256 {
-                value: block_id_bytes,
-            };
+            let block_id = abieos::read_checksum256(&mut buf);
             let block = BlockPosition {
                 block_num,
                 block_id,
