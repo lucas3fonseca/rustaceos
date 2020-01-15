@@ -284,6 +284,13 @@ version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "hello"
+version = "0.1.0"
+dependencies = [
+ "eosio_cdt 0.1.0",
+]
+
+[[package]]
 name = "hermit-abi"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"

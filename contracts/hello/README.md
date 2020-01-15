@@ -1,0 +1,6 @@
+# runs the wasm build
+cargo build --release --target=wasm32-unknown-unknown
+
+# optimizes the final wasm and place in the root folder
+wasm-gc ../../target/wasm32-unknown-unknown/release/hello.wasm hello_gc.wasm
+wasm-opt hello_gc.wasm --output hello_gc_opt.wasm -Oz
