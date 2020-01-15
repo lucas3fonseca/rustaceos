@@ -19,5 +19,5 @@ extern "C" {
     #[doc = "  @code"]
     #[doc = "  prints_l(\"Hello World!\", 5); // Output: Hello"]
     #[doc = "  @endcode"]
-    pub fn prints_l(cstr: *const ::std::os::raw::c_char, len: u32);
+    pub fn prints_l(cstr: *const crate::c_char, len: u32);
 }

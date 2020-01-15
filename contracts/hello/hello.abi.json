@@ -1,0 +1,32 @@
+{
+  "version": "eosio::abi/1.0",
+  "structs": [
+    {
+      "name": "hi",
+      "base": "",
+      "fields": [
+        {
+          "name": "name",
+          "type": "name"
+        }
+      ]
+    },
+    {
+      "name": "bye",
+      "base": "",
+      "fields": []
+    }
+  ],
+  "actions": [
+    {
+      "name": "hi",
+      "type": "hi"
+    },
+    {
+      "name": "bye",
+      "type": "bye"
+    }
+  ],
+  "tables": [],
+  "ricardian_clauses": []
+}

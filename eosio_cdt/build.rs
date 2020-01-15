@@ -13,6 +13,7 @@ fn main() {
         .header("wrapper.hpp")
         .whitelist_function("require_auth")
         .whitelist_function("prints_l")
+        .ctypes_prefix("crate")
         .trust_clang_mangling(false)
         .clang_args(clang_args);
 
