@@ -1,13 +1,3 @@
-pub struct Name {
-    pub value: u64,
-}
+pub mod eos;
 
-impl Name {
-    pub fn new(value: u64) -> Self {
-        Name { value }
-    }
-
-    pub fn from(value_str: &str) -> Self {
-        Name { }
-    }
-}
+pub use eos::*;

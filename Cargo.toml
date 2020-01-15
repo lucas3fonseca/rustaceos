@@ -4,4 +4,5 @@ members = [
     "eosio_cdt",
     "fill-x",
     "state_history",
+    "contracts/hello",
 ]
