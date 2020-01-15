@@ -1,27 +1,21 @@
-// use eosio_cdt::*;
+use eosio_cdt::{require_auth, print};
+use eosio_cdt::eos;
 
-// pub struct Name(u64);
+fn hi(name: eos::Name) {
+    require_auth(name);
+}
 
-// eosio_cdt::abi!(hi);
+#[no_mangle]
+pub extern "C" fn apply(receiver: u64, code: u64, action: u64) {
+    if code == receiver {
+        print("contract hello receiving action!");
 
-// #[eosio::action]
-// fn hi(name: Name) {
-//     eosio_cdt::print!("Hello, ", name, "!");
-// }
+        let action_hi = eos::Name::from("hi").unwrap();
 
-// #[no_mangle]
-// pub extern "C" fn apply(receiver: u64, code: u64, action: u64) {
-//     if code == receiver {
-//         match action {
-//             eosio::Name::from("hi").value() => {
-//                 // eosio::execute_action(
-//                 //     eosio::Name::from(receiver),
-//                 //     eosio::Name::from(code),
-//                 // )
-//                 let data = read_action_data::<hi>()
-//                     .expect("failed to read action data");
-//                 <hi as eosio::ActionFunction>::call(data);
-//             }
-//         }
-//     }
-// }
+        if action == action_hi.value {
+            hi(eos::Name::from("any").unwrap());
+        } else {
+            print("action not found!");
+        }
+    }
+}

@@ -14,7 +14,7 @@ impl Name {
     /// # Examples
     ///
     /// ```
-    /// use eosio_cdt::Name;
+    /// use eosio_cdt::eos::Name;
     ///
     /// let name = Name::from("").unwrap();
     /// assert_eq!(name.value, 0);
