@@ -11,6 +11,9 @@ fn main() {
     ];
     let builder = bindgen::Builder::default()
         .header("wrapper.hpp")
+        .whitelist_function("require_auth")
+        .whitelist_function("prints_l")
+        .trust_clang_mangling(false)
         .clang_args(clang_args);
 
     print!(">>> Generating bindings executing:\nbindgen");
