@@ -12,6 +12,8 @@ use state_history::{
 };
 
 static ADDRESS: &str = "http://localhost:8080";
+static INIT_BLOCK: u32 = 10;
+static END_BLOCK: u32 = 12;
 
 fn main() {
     env_logger::init();
@@ -45,17 +47,19 @@ fn main() {
     let request_blocks = request_blocks_message();
     client.send_message(&request_blocks).unwrap();
 
-    let mut blocks = 0;
     for message in client.incoming_messages() {
         let message: OwnedMessage = message.unwrap();
         if let OwnedMessage::Binary(bin) = message {
             let mut bin_bytes = BytesMut::from(&bin[..]);
             let block_response = GetBlocksResultV0::deserialize(&mut bin_bytes);
             println!("\n>>> {:?}", block_response);
-            match block_response.traces {
-              Some(_) => std::process::exit(0),
-              None => continue,
-            };
+
+            if let Some(block) = block_response.this_block {
+               if block.block_num >= END_BLOCK {
+                   println!("reached end block, finishing...");
+                   break;
+               }
+            }
         }
     }
 
@@ -83,8 +87,8 @@ fn request_status_message<'a>() -> Message<'a> {
 
 fn request_blocks_message<'a>() -> Message<'a> {
     let request = GetBlocksRequestV0 {
-        start_block_num: 1,
-        end_block_num: 4294967295,
+        start_block_num: INIT_BLOCK,
+        end_block_num: END_BLOCK + 1,
         max_messages_in_flight: 4294967295,
         have_positions: vec![],
         irreversible_only: false,
