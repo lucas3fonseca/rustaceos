@@ -2,11 +2,68 @@
 
 pub type capi_name = u64;
 extern "C" {
+    #[doc = "  Copy up to length bytes of current action data to the specified location"]
+    #[doc = ""]
+    #[doc = "  @brief Copy current action data to the specified location"]
+    #[doc = "  @param msg - a pointer where up to length bytes of the current action data will be copied"]
+    #[doc = "  @param len - len of the current action data to be copied, 0 to report required size"]
+    #[doc = "  @return the number of bytes copied to msg, or number of bytes that can be copied if len==0 passed"]
+    #[doc = "  @pre `msg` is a valid pointer to a range of memory at least `len` bytes long"]
+    #[doc = "  @post `msg` is filled with packed action data"]
+    pub fn read_action_data(msg: *mut crate::c_void, len: u32) -> u32;
+}
+extern "C" {
+    #[doc = " Get the length of the current action's data field. This method is useful for dynamically sized actions"]
+    #[doc = ""]
+    #[doc = " @brief Get the length of current action's data field"]
+    #[doc = " @return the length of the current action's data field"]
+    pub fn action_data_size() -> u32;
+}
+extern "C" {
     #[doc = "  Verifies that name exists in the set of provided auths on a action. Throws if not found."]
     #[doc = ""]
     #[doc = "  @brief Verify specified account exists in the set of provided auths"]
     #[doc = "  @param name - name of the account to be verified"]
     pub fn require_auth(name: capi_name);
+}
+extern "C" {
+    #[doc = "  Verifies that name has auth."]
+    #[doc = ""]
+    #[doc = "  @brief Verifies that name has auth."]
+    #[doc = "  @param name - name of the account to be verified"]
+    pub fn has_auth(name: capi_name) -> bool;
+}
+extern "C" {
+    #[doc = "  Verifies that name exists in the set of provided auths on a action. Throws if not found."]
+    #[doc = ""]
+    #[doc = "  @brief Verify specified account exists in the set of provided auths"]
+    #[doc = "  @param name - name of the account to be verified"]
+    #[doc = "  @param permission - permission level to be verified"]
+    pub fn require_auth2(name: capi_name, permission: capi_name);
+}
+extern "C" {
+    #[doc = "  Verifies that @ref name is an existing account."]
+    #[doc = ""]
+    #[doc = "  @brief Verifies that @ref name is an existing account."]
+    #[doc = "  @param name - name of the account to check"]
+    pub fn is_account(name: capi_name) -> bool;
+}
+extern "C" {
+    #[doc = "  Send an inline action in the context of this action's parent transaction"]
+    #[doc = ""]
+    #[doc = "  @param serialized_action - serialized action"]
+    #[doc = "  @param size - size of serialized action in bytes"]
+    #[doc = "  @pre `serialized_action` is a valid pointer to an array at least `size` bytes long"]
+    pub fn send_inline(serialized_action: *mut crate::c_char, size: usize);
+}
+extern "C" {
+    #[doc = " /function"]
+    #[doc = "  Send an inline context free action in the context of this action's parent transaction"]
+    #[doc = ""]
+    #[doc = "  @param serialized_action - serialized action"]
+    #[doc = "  @param size - size of serialized action in bytes"]
+    #[doc = "  @pre `serialized_action` is a valid pointer to an array at least `size` bytes long"]
+    pub fn send_context_free_inline(serialized_action: *mut crate::c_char, size: usize);
 }
 extern "C" {
     #[doc = "  Prints string up to given length"]

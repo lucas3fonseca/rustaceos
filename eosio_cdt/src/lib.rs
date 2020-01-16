@@ -1,7 +1,10 @@
+#![allow(non_camel_case_types)]
+
 mod eosio_cdt_bindings;
 pub mod eos;
 
 pub type c_char = u8;
+pub use core::ffi::c_void;
 
 pub fn require_auth(account: &eos::Name) {
   unsafe { eosio_cdt_bindings::require_auth(account.value) }
