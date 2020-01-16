@@ -17,7 +17,7 @@ impl Action for HiAction {
     }
 
     fn execute(&self, contract: &Contract) {
-        require_auth(contract.get_self()); // self.name);
+        require_auth(contract.get_self());
         let msg = format!("Hi, {}", self.name.value);
         print(msg.as_str());
     }
@@ -34,7 +34,6 @@ pub extern "C" fn apply(receiver: u64, code: u64, action: u64) {
             eosio_cdt::execute_action::<HiAction>(&mut contract);
         } else {
             print("Action not implemented");
-            panic!("action not implemented");
         }
     }
 }
