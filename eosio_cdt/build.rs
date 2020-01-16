@@ -6,8 +6,10 @@ fn main() {
     println!("cargo:rerun-if-changed=wrapper.hpp");
 
     let clang_args = vec![
-        "-I", "./external/eosio.cdt/libraries/libc/musl/include",
-        "-I", "./external/eosio.cdt/libraries",
+        "-I",
+        "./external/eosio.cdt/libraries/libc/musl/include",
+        "-I",
+        "./external/eosio.cdt/libraries",
     ];
     let builder = bindgen::Builder::default()
         .header("wrapper.hpp")
