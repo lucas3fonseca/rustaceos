@@ -6,12 +6,21 @@ fn main() {
     println!("cargo:rerun-if-changed=wrapper.hpp");
 
     let clang_args = vec![
-        "-I", "./external/eosio.cdt/libraries/libc/musl/include",
-        "-I", "./external/eosio.cdt/libraries",
+        "-I",
+        "./external/eosio.cdt/libraries/libc/musl/include",
+        "-I",
+        "./external/eosio.cdt/libraries",
     ];
     let builder = bindgen::Builder::default()
         .header("wrapper.hpp")
         .whitelist_function("require_auth")
+        .whitelist_function("read_action_data")
+        .whitelist_function("action_data_size")
+        .whitelist_function("has_auth")
+        .whitelist_function("require_auth2")
+        .whitelist_function("is_account")
+        .whitelist_function("send_inline")
+        .whitelist_function("send_context_free_inline")
         .whitelist_function("prints_l")
         .ctypes_prefix("crate")
         .trust_clang_mangling(false)

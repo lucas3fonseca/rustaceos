@@ -211,6 +211,7 @@ name = "eosio_cdt"
 version = "0.1.0"
 dependencies = [
  "bindgen 0.51.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "bytes 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -287,6 +288,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "hello"
 version = "0.1.0"
 dependencies = [
+ "bytes 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "eosio_cdt 0.1.0",
 ]
 

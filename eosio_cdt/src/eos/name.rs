@@ -1,4 +1,5 @@
 use std::cmp;
+use bytes::{Bytes, Buf};
 
 pub struct Name {
     pub value: u64,
@@ -6,6 +7,11 @@ pub struct Name {
 
 impl Name {
     pub fn new(value: u64) -> Self {
+        Name { value }
+    }
+
+    pub fn read(bytes: &mut Bytes) -> Self {
+        let value: u64 = bytes.get_u64_le();
         Name { value }
     }
 
@@ -78,7 +84,7 @@ impl Name {
             value |= name_char as u64;
         }
 
-        Ok(Name{ value })
+        Ok(Name { value })
     }
 }
 
@@ -87,6 +93,6 @@ pub fn char_to_value(c: char) -> Result<u8, &'static str> {
         '.' => Ok(0),
         '1'..='5' => Ok((c as u8 - b'1') + 1),
         'a'..='z' => Ok((c as u8 - b'a') + 6),
-        _ => Err("character is not in allowed character set for names")
+        _ => Err("character is not in allowed character set for names"),
     }
 }
