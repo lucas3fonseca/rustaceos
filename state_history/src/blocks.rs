@@ -1,6 +1,7 @@
-use bytes::{BytesMut, Buf};
-use abieos::{
-  AbiDeserializer,
+use bytes::{Bytes, Buf};
+use eosio_cdt::eos;
+use eosio_cdt::eos::{
+  AbiRead,
   Checksum256,
   PublicKey,
 };
@@ -11,10 +12,10 @@ pub struct BlockPosition {
     pub block_id: Checksum256,
 }
 
-impl AbiDeserializer for BlockPosition {
-  fn deserialize(buf: &mut BytesMut) -> BlockPosition {
+impl AbiRead for BlockPosition {
+  fn read(buf: &mut Bytes) -> BlockPosition {
     let block_num = buf.get_u32_le();
-    let block_id = abieos::read_checksum256(buf);
+    let block_id = Checksum256::read(buf);
     BlockPosition {
         block_num,
         block_id,
@@ -35,24 +36,24 @@ pub struct BlockHeader {
     pub header_extensions: Vec<Extension>,
 }
 
-impl AbiDeserializer for BlockHeader {
-    fn deserialize(buf: &mut BytesMut) -> BlockHeader {
+impl AbiRead for BlockHeader {
+    fn read(buf: &mut Bytes) -> BlockHeader {
         let timestamp = buf.get_u32_le();
         let producer = buf.get_u64_le();
         let confirmed = buf.get_u16_le();
-        let previous = abieos::read_checksum256(buf);
-        let transaction_mroot = abieos::read_checksum256(buf);
-        let action_mroot = abieos::read_checksum256(buf);
+        let previous = Checksum256::read(buf);
+        let transaction_mroot = Checksum256::read(buf);
+        let action_mroot = Checksum256::read(buf);
         let schedule_version = buf.get_u32_le();
 
         let has_new_producers = buf.get_u8();
         let new_producers = if has_new_producers == 1 {
-            Some(ProducerSchedule::deserialize(buf))
+            Some(ProducerSchedule::read(buf))
         } else {
             None
         };
 
-        let extensions_length = abieos::read_varuint32(buf).unwrap();
+        let extensions_length = eos::read_varuint32(buf).unwrap();
         if extensions_length > 0 {
             panic!("todo: parse extensions");
         }
@@ -83,14 +84,14 @@ pub struct ProducerSchedule {
   pub producers: Vec<ProducerKey>,
 }
 
-impl AbiDeserializer for ProducerSchedule {
-    fn deserialize(buf: &mut BytesMut) -> ProducerSchedule {
+impl AbiRead for ProducerSchedule {
+    fn read(buf: &mut Bytes) -> ProducerSchedule {
         let version = buf.get_u32_le();
 
-        let producers_len = abieos::read_varuint32(buf).unwrap();
+        let producers_len = eos::read_varuint32(buf).unwrap();
         let mut producers = Vec::new();
         for _ in 0..producers_len {
-            producers.push(ProducerKey::deserialize(buf));
+            producers.push(ProducerKey::read(buf));
         }
 
         ProducerSchedule {
@@ -106,10 +107,10 @@ pub struct ProducerKey {
   pub block_signing_key: PublicKey,
 }
 
-impl AbiDeserializer for ProducerKey {
-    fn deserialize(buf: &mut BytesMut) -> ProducerKey {
+impl AbiRead for ProducerKey {
+    fn read(buf: &mut Bytes) -> ProducerKey {
         let producer_name = buf.get_u64_le();
-        let block_signing_key = PublicKey::deserialize(buf);
+        let block_signing_key = PublicKey::read(buf);
 
         ProducerKey {
             producer_name,

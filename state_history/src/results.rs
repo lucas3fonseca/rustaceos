@@ -5,8 +5,9 @@ use crate::blocks::{
 use crate::actions::{
   TransactionTraceV0,
 };
-use abieos::{AbiDeserializer};
-use bytes::{Buf, BytesMut};
+use eosio_cdt::eos;
+use eosio_cdt::eos::{AbiRead};
+use bytes::{Buf, Bytes};
 
 #[derive(Debug)]
 pub struct GetStatusResponseV0 {
@@ -18,16 +19,16 @@ pub struct GetStatusResponseV0 {
     pub chain_state_end_block: u32,
 }
 
-impl AbiDeserializer for GetStatusResponseV0 {
-    fn deserialize(buf: &mut BytesMut) -> GetStatusResponseV0 {
-        let variant_index = abieos::read_varuint32(buf)
+impl AbiRead for GetStatusResponseV0 {
+    fn read(buf: &mut Bytes) -> GetStatusResponseV0 {
+        let variant_index = eos::read_varuint32(buf)
             .expect("fail to read the get_status_response_v0 variant");
         if variant_index != 0 {
             panic!("the response does not refer to get_status_response_v0 variant");
         }
 
-        let block_position = BlockPosition::deserialize(buf);
-        let last_irreversible = BlockPosition::deserialize(buf);
+        let block_position = BlockPosition::read(buf);
+        let last_irreversible = BlockPosition::read(buf);
         let trace_begin_block = buf.get_u32_le();
         let trace_end_block = buf.get_u32_le();
         let chain_state_begin_block = buf.get_u32_le();
@@ -55,20 +56,20 @@ pub struct GetBlocksResultV0 {
     pub deltas: Option<Vec<u8>>,
 }
 
-impl AbiDeserializer for GetBlocksResultV0 {
-    fn deserialize(buf: &mut BytesMut) -> GetBlocksResultV0 {
-        let variant_index = abieos::read_varuint32(buf)
+impl AbiRead for GetBlocksResultV0 {
+    fn read(buf: &mut Bytes) -> GetBlocksResultV0 {
+        let variant_index = eos::read_varuint32(buf)
             .expect("fail to read the get_blocks_result_v0 variant");
         if variant_index != 1 {
             panic!("the response does not refer to get_blocks_result_v0 variant");
         }
 
-        let head = BlockPosition::deserialize(buf);
-        let last_irreversible = BlockPosition::deserialize(buf);
+        let head = BlockPosition::read(buf);
+        let last_irreversible = BlockPosition::read(buf);
 
         let this_block_present = buf.get_u8() == 1;
         let this_block = if this_block_present {
-            let block = BlockPosition::deserialize(buf);
+            let block = BlockPosition::read(buf);
             Some(block)
         } else {
             None
@@ -76,7 +77,7 @@ impl AbiDeserializer for GetBlocksResultV0 {
 
         let prev_block_present = buf.get_u8() == 1;
         let prev_block = if prev_block_present {
-            let block = BlockPosition::deserialize(buf);
+            let block = BlockPosition::read(buf);
             Some(block)
         } else {
             None
@@ -84,11 +85,11 @@ impl AbiDeserializer for GetBlocksResultV0 {
 
         let has_block = buf.get_u8() == 1;
         let block = if has_block {
-            let block_header_length = abieos::read_varuint32(buf)
+            let block_header_length = eos::read_varuint32(buf)
                 .expect("fail to get block header bytes");
             let mut block_header_bytes = Vec::with_capacity(block_header_length as usize);
             buf.copy_to_slice(&mut block_header_bytes[..]);
-            let block_header = BlockHeader::deserialize(buf);
+            let block_header = BlockHeader::read(buf);
             Some(block_header)
         } else {
             None
@@ -96,11 +97,11 @@ impl AbiDeserializer for GetBlocksResultV0 {
 
         let has_traces = buf.get_u8() == 1;
         let traces = if has_traces {
-          let trace_length = abieos::read_varuint32(buf)
+          let trace_length = eos::read_varuint32(buf)
               .expect("fail to get trace length");
           let mut trace_bytes = Vec::with_capacity(trace_length as usize);
           buf.copy_to_slice(&mut trace_bytes[..]);
-          let traces = TransactionTraceV0::deserialize(buf);
+          let traces = TransactionTraceV0::read(buf);
           Some(traces)
         } else {
           None

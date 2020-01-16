@@ -1,6 +1,5 @@
 [workspace]
 members = [
-    "abieos",
     "eosio_cdt",
     "fill-x",
     "state_history",

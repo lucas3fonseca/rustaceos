@@ -9,7 +9,7 @@ pub struct HiAction {
 impl Action for HiAction {
     const NAME: eos::Name = eos::Name {
         value: 7746191359077253120u64,
-    }; //eos::Name::new(123); //.unwrap();
+    }; //eos::Name::from("hi").unwrap();
 
     fn read_data(bytes: &mut Bytes) -> Result<Self, EosError> {
         let name = eos::Name::read(bytes);

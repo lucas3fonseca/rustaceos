@@ -1,5 +1,6 @@
 use crate::blocks::BlockPosition;
-use abieos::AbiSerializer;
+use eosio_cdt::eos;
+use eosio_cdt::eos::{AbiWrite};
 use bytes::BufMut;
 
 // to use in the future when we generalize the requests functions
@@ -25,20 +26,20 @@ pub struct GetBlocksRequestV0 {
     pub fetch_deltas: bool,
 }
 
-impl AbiSerializer for GetStatusRequestV0 {
-    fn serialize(&self) -> Vec<u8> {
+impl AbiWrite for GetStatusRequestV0 {
+    fn write(&self) -> Vec<u8> {
         let mut buffer = Vec::new();
 
         // todo: find it in static requests variant
         let get_status_variant_index = 0;
-        abieos::push_varuint32(&mut buffer, get_status_variant_index);
+        eos::push_varuint32(&mut buffer, get_status_variant_index);
 
         buffer
     }
 }
 
-impl AbiSerializer for GetBlocksRequestV0 {
-    fn serialize(&self) -> Vec<u8> {
+impl AbiWrite for GetBlocksRequestV0 {
+    fn write(&self) -> Vec<u8> {
         let mut buf = vec![];
 
         // todo: find it in static requests variant
@@ -49,7 +50,7 @@ impl AbiSerializer for GetBlocksRequestV0 {
         buf.put_u32_le(self.end_block_num);
         buf.put_u32_le(self.max_messages_in_flight);
 
-        abieos::push_varuint32(&mut buf, self.have_positions.len() as u32);
+        eos::push_varuint32(&mut buf, self.have_positions.len() as u32);
         for pos in &self.have_positions {
             buf.put_u32_le(pos.block_num);
             for v in &pos.block_id.value {

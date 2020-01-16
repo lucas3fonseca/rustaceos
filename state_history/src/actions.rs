@@ -1,6 +1,7 @@
-use bytes::{BytesMut, Buf};
-use abieos::{
-  AbiDeserializer,
+use bytes::{Bytes, Buf};
+use eosio_cdt::eos;
+use eosio_cdt::eos::{
+  AbiRead,
   Checksum256,
   TimePointSec,
   Signature,
@@ -25,12 +26,12 @@ pub struct TransactionTraceV0 {
   pub partial: Option<PartialTransactionV0>,
 }
 
-impl AbiDeserializer for TransactionTraceV0 {
-  fn deserialize(buf: &mut BytesMut) -> TransactionTraceV0 {
-    let id = abieos::read_checksum256(buf);
+impl AbiRead for TransactionTraceV0 {
+  fn read(buf: &mut Bytes) -> TransactionTraceV0 {
+    let id = Checksum256::read(buf);
     let status = buf.get_u8();
     let cpu_usage_us = buf.get_u32_le();
-    let net_usage_words = abieos::read_varuint32(buf).unwrap();
+    let net_usage_words = eos::read_varuint32(buf).unwrap();
     let elapsed = buf.get_i64_le();
     let net_usage = buf.get_u64_le();
     let scheduled = buf.get_u8() != 0;

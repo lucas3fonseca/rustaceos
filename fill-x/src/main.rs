@@ -1,12 +1,12 @@
 // #[macro_use] extern crate log;
-use bytes::BytesMut;
+use bytes::Bytes;
 use env_logger;
 use serde_json::Value;
 use websocket::{ClientBuilder, Message, OwnedMessage};
 
 mod serialize;
 
-use abieos::{AbiDeserializer, AbiSerializer};
+use eosio_cdt::eos::{AbiRead, AbiWrite};
 use state_history::{
     GetBlocksRequestV0, GetBlocksResultV0, GetStatusRequestV0, GetStatusResponseV0,
 };
@@ -50,8 +50,8 @@ fn main() {
     for message in client.incoming_messages() {
         let message: OwnedMessage = message.unwrap();
         if let OwnedMessage::Binary(bin) = message {
-            let mut bin_bytes = BytesMut::from(&bin[..]);
-            let block_response = GetBlocksResultV0::deserialize(&mut bin_bytes);
+            let mut bin_bytes = Bytes::from(&bin[..]);
+            let block_response = GetBlocksResultV0::read(&mut bin_bytes);
             println!("\n>>> {:?}", block_response);
 
             if let Some(block) = block_response.this_block {
@@ -96,13 +96,13 @@ fn request_blocks_message<'a>() -> Message<'a> {
         fetch_traces: true,
         fetch_deltas: true,
     };
-    Message::binary(request.serialize())
+    Message::binary(request.write())
 }
 
 fn print_ship_status(message: &OwnedMessage) {
     if let OwnedMessage::Binary(bin) = message {
-        let mut bin_bytes = BytesMut::from(&bin[..]);
-        let status_response = GetStatusResponseV0::deserialize(&mut bin_bytes);
+        let mut bin_bytes = Bytes::from(&bin[..]);
+        let status_response = GetStatusResponseV0::read(&mut bin_bytes);
         println!("Status response {:?}", status_response);
     } else {
         panic!("Fail to parse the SHIP status message");

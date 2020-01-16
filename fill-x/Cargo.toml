@@ -12,5 +12,5 @@ env_logger = "0.7"
 websocket = "*"
 serde_json = "1.0.44"
 bytes = "0.5.3"
-abieos = { path = "../abieos" }
+eosio_cdt = { path = "../eosio_cdt" }
 state_history = { path = "../state_history" }
