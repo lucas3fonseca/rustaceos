@@ -1,13 +1,8 @@
-use crate::blocks::{
-  BlockPosition,
-  BlockHeader,
-};
-use crate::actions::{
-  TransactionTraceV0,
-};
-use eosio_cdt::eos;
-use eosio_cdt::eos::{AbiRead};
+use crate::actions::TransactionTraceV0;
+use crate::blocks::{BlockHeader, BlockPosition};
 use bytes::{Buf, Bytes};
+use eosio_cdt::eos;
+use eosio_cdt::eos::AbiRead;
 
 #[derive(Debug)]
 pub struct GetStatusResponseV0 {
@@ -21,8 +16,8 @@ pub struct GetStatusResponseV0 {
 
 impl AbiRead for GetStatusResponseV0 {
     fn read(buf: &mut Bytes) -> GetStatusResponseV0 {
-        let variant_index = eos::read_varuint32(buf)
-            .expect("fail to read the get_status_response_v0 variant");
+        let variant_index =
+            eos::read_varuint32(buf).expect("fail to read the get_status_response_v0 variant");
         if variant_index != 0 {
             panic!("the response does not refer to get_status_response_v0 variant");
         }
@@ -58,8 +53,8 @@ pub struct GetBlocksResultV0 {
 
 impl AbiRead for GetBlocksResultV0 {
     fn read(buf: &mut Bytes) -> GetBlocksResultV0 {
-        let variant_index = eos::read_varuint32(buf)
-            .expect("fail to read the get_blocks_result_v0 variant");
+        let variant_index =
+            eos::read_varuint32(buf).expect("fail to read the get_blocks_result_v0 variant");
         if variant_index != 1 {
             panic!("the response does not refer to get_blocks_result_v0 variant");
         }
@@ -85,8 +80,8 @@ impl AbiRead for GetBlocksResultV0 {
 
         let has_block = buf.get_u8() == 1;
         let block = if has_block {
-            let block_header_length = eos::read_varuint32(buf)
-                .expect("fail to get block header bytes");
+            let block_header_length =
+                eos::read_varuint32(buf).expect("fail to get block header bytes");
             let mut block_header_bytes = Vec::with_capacity(block_header_length as usize);
             buf.copy_to_slice(&mut block_header_bytes[..]);
             let block_header = BlockHeader::read(buf);
@@ -97,14 +92,13 @@ impl AbiRead for GetBlocksResultV0 {
 
         let has_traces = buf.get_u8() == 1;
         let traces = if has_traces {
-          let trace_length = eos::read_varuint32(buf)
-              .expect("fail to get trace length");
-          let mut trace_bytes = Vec::with_capacity(trace_length as usize);
-          buf.copy_to_slice(&mut trace_bytes[..]);
-          let traces = TransactionTraceV0::read(buf);
-          Some(traces)
+            let trace_length = eos::read_varuint32(buf).expect("fail to get trace length");
+            let mut trace_bytes = Vec::with_capacity(trace_length as usize);
+            buf.copy_to_slice(&mut trace_bytes[..]);
+            let traces = TransactionTraceV0::read(buf);
+            Some(traces)
         } else {
-          None
+            None
         };
 
         GetBlocksResultV0 {

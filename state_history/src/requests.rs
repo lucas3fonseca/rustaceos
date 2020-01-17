@@ -1,7 +1,7 @@
 use crate::blocks::BlockPosition;
-use eosio_cdt::eos;
-use eosio_cdt::eos::{AbiWrite};
 use bytes::BufMut;
+use eosio_cdt::eos;
+use eosio_cdt::eos::AbiWrite;
 
 // to use in the future when we generalize the requests functions
 // pub static ShipRequests: Variant = Variant {

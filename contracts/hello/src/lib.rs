@@ -1,5 +1,6 @@
 use bytes::Bytes;
 use eosio_cdt::eos;
+use eosio_cdt::eos::AbiRead;
 use eosio_cdt::{print, require_auth, Action, Contract, EosError};
 
 pub struct HiAction {

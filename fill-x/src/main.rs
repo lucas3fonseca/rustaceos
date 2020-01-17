@@ -55,10 +55,10 @@ fn main() {
             println!("\n>>> {:?}", block_response);
 
             if let Some(block) = block_response.this_block {
-               if block.block_num >= END_BLOCK {
-                   println!("reached end block, finishing...");
-                   break;
-               }
+                if block.block_num >= END_BLOCK {
+                    println!("reached end block, finishing...");
+                    break;
+                }
             }
         }
     }

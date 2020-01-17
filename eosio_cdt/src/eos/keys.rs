@@ -1,4 +1,5 @@
-use bytes::{Bytes, Buf};
+use super::abi::AbiRead;
+use bytes::{Buf, Bytes};
 use std::fmt;
 
 #[derive(Debug)]
@@ -15,8 +16,8 @@ pub struct PublicKey {
 
 #[derive(Debug)]
 pub struct Signature {
-  k1r1_size: u32, // always 65
-  key_type: KeyType, // always k1
+    k1r1_size: u32,    // always 65
+    key_type: KeyType, // always k1
 }
 
 impl fmt::Debug for PublicKey {

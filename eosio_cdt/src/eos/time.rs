@@ -1,4 +1,4 @@
 #[derive(Debug)]
 pub struct TimePointSec {
-  utc_seconds: u32,
+    utc_seconds: u32,
 }

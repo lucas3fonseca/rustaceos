@@ -1,4 +1,4 @@
-use bytes::{Bytes, Buf};
+use bytes::Bytes;
 
 pub trait AbiWrite {
     fn write(&self) -> Vec<u8>;

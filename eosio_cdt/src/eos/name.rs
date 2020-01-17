@@ -1,5 +1,6 @@
+use super::abi::AbiRead;
+use bytes::{Buf, Bytes};
 use std::cmp;
-use bytes::{Bytes, Buf};
 
 pub struct Name {
     pub value: u64,
@@ -7,11 +8,6 @@ pub struct Name {
 
 impl Name {
     pub fn new(value: u64) -> Self {
-        Name { value }
-    }
-
-    pub fn read(bytes: &mut Bytes) -> Self {
-        let value: u64 = bytes.get_u64_le();
         Name { value }
     }
 
@@ -88,7 +84,14 @@ impl Name {
     }
 }
 
-pub fn char_to_value(c: char) -> Result<u8, &'static str> {
+impl AbiRead for Name {
+    fn read(bytes: &mut Bytes) -> Self {
+        let value: u64 = bytes.get_u64_le();
+        Name { value }
+    }
+}
+
+fn char_to_value(c: char) -> Result<u8, &'static str> {
     match c {
         '.' => Ok(0),
         '1'..='5' => Ok((c as u8 - b'1') + 1),

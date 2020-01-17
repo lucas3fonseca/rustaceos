@@ -1,10 +1,6 @@
-use bytes::{Bytes, Buf};
+use bytes::{Buf, Bytes};
 use eosio_cdt::eos;
-use eosio_cdt::eos::{
-  AbiRead,
-  Checksum256,
-  PublicKey,
-};
+use eosio_cdt::eos::{AbiRead, Checksum256, PublicKey};
 
 #[derive(Debug)]
 pub struct BlockPosition {
@@ -13,14 +9,14 @@ pub struct BlockPosition {
 }
 
 impl AbiRead for BlockPosition {
-  fn read(buf: &mut Bytes) -> BlockPosition {
-    let block_num = buf.get_u32_le();
-    let block_id = Checksum256::read(buf);
-    BlockPosition {
-        block_num,
-        block_id,
+    fn read(buf: &mut Bytes) -> BlockPosition {
+        let block_num = buf.get_u32_le();
+        let block_id = Checksum256::read(buf);
+        BlockPosition {
+            block_num,
+            block_id,
+        }
     }
-  }
 }
 
 #[derive(Debug)]
@@ -74,14 +70,14 @@ impl AbiRead for BlockHeader {
 
 #[derive(Debug)]
 pub struct Extension {
-  pub r#type: u16,
-  pub data: Vec<u8>,
+    pub r#type: u16,
+    pub data: Vec<u8>,
 }
 
 #[derive(Debug)]
 pub struct ProducerSchedule {
-  pub version: u32,
-  pub producers: Vec<ProducerKey>,
+    pub version: u32,
+    pub producers: Vec<ProducerKey>,
 }
 
 impl AbiRead for ProducerSchedule {
@@ -94,17 +90,14 @@ impl AbiRead for ProducerSchedule {
             producers.push(ProducerKey::read(buf));
         }
 
-        ProducerSchedule {
-            version,
-            producers,
-        }
+        ProducerSchedule { version, producers }
     }
 }
 
 #[derive(Debug)]
 pub struct ProducerKey {
-  pub producer_name: u64, // todo: name
-  pub block_signing_key: PublicKey,
+    pub producer_name: u64, // todo: name
+    pub block_signing_key: PublicKey,
 }
 
 impl AbiRead for ProducerKey {
