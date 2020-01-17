@@ -1,7 +1,8 @@
-use super::EosSerialize;
-use bytes::{Buf, BufMut, Bytes, BytesMut};
+// use bytes::{Buf, BufMut, Bytes, BytesMut};
 use std::fmt;
+use serde::{Serialize, Deserialize};
 
+#[derive(Serialize, Deserialize)]
 pub struct Checksum256 {
     pub value: [u8; 32],
 }
@@ -17,19 +18,19 @@ impl Checksum256 {
     }
 }
 
-impl EosSerialize for Checksum256 {
-    fn read(buf: &mut Bytes) -> Checksum256 {
-        let mut value = [0; 32];
-        buf.copy_to_slice(&mut value);
-        Checksum256 { value }
-    }
+// impl EosSerialize for Checksum256 {
+//     fn read(buf: &mut Bytes) -> Checksum256 {
+//         let mut value = [0; 32];
+//         buf.copy_to_slice(&mut value);
+//         Checksum256 { value }
+//     }
 
-    fn write(&self, buf: &mut BytesMut) {
-        for v in &self.value {
-            buf.put_u8(*v);
-        }
-    }
-}
+//     fn write(&self, buf: &mut BytesMut) {
+//         for v in &self.value {
+//             buf.put_u8(*v);
+//         }
+//     }
+// }
 
 impl fmt::Display for Checksum256 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

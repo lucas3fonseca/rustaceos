@@ -1,6 +1,7 @@
 #![allow(non_camel_case_types)]
 
-use bytes::Bytes;
+// use bytes::Bytes;
+use serde::de::DeserializeOwned;
 
 pub mod eos;
 mod eosio_cdt_bindings;
@@ -9,13 +10,13 @@ pub type c_char = u8;
 pub use core::ffi::c_void;
 
 pub enum EosError {
-    FailToReadBytes,
+    FailToGetActionInstance,
 }
 
 pub struct Contract {
     contract: eos::Name,
     code: eos::Name,
-    data_stream: Option<Bytes>,
+    data_stream: Option<Vec<u8>>,
 }
 
 impl Contract {
@@ -27,7 +28,7 @@ impl Contract {
         }
     }
 
-    pub fn set_data_stream(&mut self, data_stream: Bytes) {
+    pub fn set_data_stream(&mut self, data_stream: Vec<u8>) {
         self.data_stream = Some(data_stream);
     }
 
@@ -40,9 +41,8 @@ impl Contract {
     }
 }
 
-pub trait Action: Sized {
+pub trait Action: DeserializeOwned {
     const NAME: eos::Name;
-    fn read_data(bytes: &mut Bytes) -> Result<Self, EosError>;
     fn execute(&self, contract: &Contract);
 }
 
@@ -51,12 +51,19 @@ pub fn execute_action<T: Action>(contract: &mut Contract) -> Result<(), EosError
     let mut bytes: Vec<u8> = vec![0; byte_size as usize];
     let buffer = &mut bytes[..] as *mut _ as *mut c_void;
     unsafe { eosio_cdt_bindings::read_action_data(buffer, byte_size) };
-    // let mut pos = 0;
-    let mut bytes_buf = Bytes::from(bytes);
-    let action_instance = T::read_data(&mut bytes_buf)?;
-    contract.set_data_stream(bytes_buf);
-    action_instance.execute(contract);
-    Ok(())
+
+    // let mut bytes_buf = Bytes::from(bytes);
+    // let action_instance = T::read_data(&bytes)?;
+    let action_instance: Option<T> = bincode::deserialize(&bytes[..])
+        .expect("fail to decode action data");
+
+    if let Some(action) = action_instance {
+        contract.set_data_stream(bytes); //bytes_buf);
+        action.execute(contract);
+        return Ok(())
+    }
+
+    Err(EosError::FailToGetActionInstance)
 }
 
 pub fn require_auth(account: &eos::Name) {

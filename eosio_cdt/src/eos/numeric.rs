@@ -1,45 +1,45 @@
 use bytes::{Buf, BufMut, Bytes, BytesMut};
-use super::EosSerialize;
+// use super::EosSerialize;
 
-impl EosSerialize for u8 {
-    fn read(buf: &mut Bytes) -> Self {
-        buf.get_u8()
-    }
+// impl EosSerialize for u8 {
+//     fn read(buf: &mut Bytes) -> Self {
+//         buf.get_u8()
+//     }
 
-    fn write(&self, buf: &mut BytesMut) {
-        buf.put_u8(*self);
-    }
-}
+//     fn write(&self, buf: &mut BytesMut) {
+//         buf.put_u8(*self);
+//     }
+// }
 
-impl EosSerialize for u16 {
-    fn read(buf: &mut Bytes) -> Self {
-        buf.get_u16_le()
-    }
+// impl EosSerialize for u16 {
+//     fn read(buf: &mut Bytes) -> Self {
+//         buf.get_u16_le()
+//     }
 
-    fn write(&self, buf: &mut BytesMut) {
-        buf.put_u16_le(*self);
-    }
-}
+//     fn write(&self, buf: &mut BytesMut) {
+//         buf.put_u16_le(*self);
+//     }
+// }
 
-impl EosSerialize for u32 {
-    fn read(buf: &mut Bytes) -> Self {
-        buf.get_u32_le()
-    }
+// impl EosSerialize for u32 {
+//     fn read(buf: &mut Bytes) -> Self {
+//         buf.get_u32_le()
+//     }
 
-    fn write(&self, buf: &mut BytesMut) {
-        buf.put_u32_le(*self);
-    }
-}
+//     fn write(&self, buf: &mut BytesMut) {
+//         buf.put_u32_le(*self);
+//     }
+// }
 
-impl EosSerialize for u64 {
-    fn read(buf: &mut Bytes) -> Self {
-        buf.get_u64_le()
-    }
+// impl EosSerialize for u64 {
+//     fn read(buf: &mut Bytes) -> Self {
+//         buf.get_u64_le()
+//     }
 
-    fn write(&self, buf: &mut BytesMut) {
-        buf.put_u64_le(*self);
-    }
-}
+//     fn write(&self, buf: &mut BytesMut) {
+//         buf.put_u64_le(*self);
+//     }
+// }
 
 pub fn push_varuint32(buf: &mut BytesMut, v: u32) {
     let mut val: u64 = v as u64;

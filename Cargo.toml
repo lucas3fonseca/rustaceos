@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "bincode",
     "eosio_cdt",
     "fill-x",
     "state_history",
