@@ -1,5 +1,5 @@
-use super::abi::AbiRead;
-use bytes::{Buf, Bytes};
+use super::EosSerialize;
+use bytes::{Buf, BufMut, Bytes, BytesMut};
 use std::fmt;
 
 #[derive(Debug)]
@@ -26,7 +26,7 @@ impl fmt::Debug for PublicKey {
     }
 }
 
-impl AbiRead for PublicKey {
+impl EosSerialize for PublicKey {
     fn read(buf: &mut Bytes) -> PublicKey {
         let key_type_index = buf.get_u8();
         let key_type = match key_type_index {
@@ -45,5 +45,10 @@ impl AbiRead for PublicKey {
             r#type: key_type,
             data,
         }
+    }
+
+    // TODO
+    fn write(&self, buf: &mut BytesMut) {
+        buf.put_u8(0);
     }
 }

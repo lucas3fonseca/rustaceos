@@ -1,24 +1,65 @@
-use bytes::{Buf, Bytes};
+use bytes::{Buf, BufMut, Bytes, BytesMut};
+use super::EosSerialize;
 
-pub fn push_varuint32(bin: &mut Vec<u8>, v: u32) {
+impl EosSerialize for u8 {
+    fn read(buf: &mut Bytes) -> Self {
+        buf.get_u8()
+    }
+
+    fn write(&self, buf: &mut BytesMut) {
+        buf.put_u8(*self);
+    }
+}
+
+impl EosSerialize for u16 {
+    fn read(buf: &mut Bytes) -> Self {
+        buf.get_u16_le()
+    }
+
+    fn write(&self, buf: &mut BytesMut) {
+        buf.put_u16_le(*self);
+    }
+}
+
+impl EosSerialize for u32 {
+    fn read(buf: &mut Bytes) -> Self {
+        buf.get_u32_le()
+    }
+
+    fn write(&self, buf: &mut BytesMut) {
+        buf.put_u32_le(*self);
+    }
+}
+
+impl EosSerialize for u64 {
+    fn read(buf: &mut Bytes) -> Self {
+        buf.get_u64_le()
+    }
+
+    fn write(&self, buf: &mut BytesMut) {
+        buf.put_u64_le(*self);
+    }
+}
+
+pub fn push_varuint32(buf: &mut BytesMut, v: u32) {
     let mut val: u64 = v as u64;
     loop {
         let mut b: u8 = (val & 0x7f) as u8;
         val >>= 7;
         b |= (if val > 0 { 1 } else { 0 }) << 7;
-        bin.push(b);
+        buf.put_u8(b);
         if val == 0 {
             break;
         }
     }
 }
 
-pub fn read_varuint32(bin: &mut Bytes) -> Result<u32, &'static str> {
+pub fn read_varuint32(buf: &mut Bytes) -> Result<u32, &'static str> {
     let mut value: u32 = 0;
     let mut shift = 0;
 
     loop {
-        let current_byte = bin.get_u8();
+        let current_byte = buf.get_u8();
         value |= (current_byte & 0x7f) as u32;
         value = value << shift;
 

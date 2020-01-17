@@ -1,12 +1,12 @@
 // #[macro_use] extern crate log;
-use bytes::Bytes;
+use bytes::{Bytes, BytesMut};
 use env_logger;
 use serde_json::Value;
 use websocket::{ClientBuilder, Message, OwnedMessage};
 
 mod serialize;
 
-use eosio_cdt::eos::{AbiRead, AbiWrite};
+use eosio_cdt::eos::EosSerialize;
 use state_history::{
     GetBlocksRequestV0, GetBlocksResultV0, GetStatusRequestV0, GetStatusResponseV0,
 };
@@ -75,7 +75,9 @@ fn init_abi_definitions(message: &OwnedMessage) -> Result<Value, &'static str> {
 
 fn request_status_message<'a>() -> Message<'a> {
     let request = GetStatusRequestV0 {};
-    Message::binary(request.write())
+    let mut buf = BytesMut::new();
+    request.write(&mut buf);
+    Message::binary(buf.to_vec())
 }
 
 fn request_blocks_message<'a>() -> Message<'a> {
@@ -89,7 +91,9 @@ fn request_blocks_message<'a>() -> Message<'a> {
         fetch_traces: true,
         fetch_deltas: true,
     };
-    Message::binary(request.write())
+    let mut buf = BytesMut::new();
+    request.write(&mut buf);
+    Message::binary(buf.to_vec())
 }
 
 fn print_ship_status(message: OwnedMessage) {

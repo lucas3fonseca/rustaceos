@@ -1,8 +1,8 @@
 use crate::actions::TransactionTraceV0;
 use crate::blocks::{BlockHeader, BlockPosition};
-use bytes::{Buf, Bytes};
+use bytes::{Buf, BufMut, Bytes, BytesMut};
 use eosio_cdt::eos;
-use eosio_cdt::eos::AbiRead;
+use eosio_cdt::eos::EosSerialize;
 
 #[derive(Debug)]
 pub struct GetStatusResponseV0 {
@@ -14,7 +14,7 @@ pub struct GetStatusResponseV0 {
     pub chain_state_end_block: u32,
 }
 
-impl AbiRead for GetStatusResponseV0 {
+impl EosSerialize for GetStatusResponseV0 {
     fn read(buf: &mut Bytes) -> GetStatusResponseV0 {
         let variant_index =
             eos::read_varuint32(buf).expect("fail to read the get_status_response_v0 variant");
@@ -38,6 +38,9 @@ impl AbiRead for GetStatusResponseV0 {
             chain_state_end_block,
         }
     }
+
+    // TODO
+    fn write(&self, buf: &mut BytesMut) {}
 }
 
 #[derive(Debug)]
@@ -51,7 +54,7 @@ pub struct GetBlocksResultV0 {
     pub deltas: Option<Vec<u8>>,
 }
 
-impl AbiRead for GetBlocksResultV0 {
+impl EosSerialize for GetBlocksResultV0 {
     fn read(buf: &mut Bytes) -> GetBlocksResultV0 {
         let variant_index =
             eos::read_varuint32(buf).expect("fail to read the get_blocks_result_v0 variant");
@@ -111,4 +114,7 @@ impl AbiRead for GetBlocksResultV0 {
             deltas: None,
         }
     }
+
+    // TODO
+    fn write(&self, buf: &mut BytesMut) {}
 }

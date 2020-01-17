@@ -1,4 +1,4 @@
-pub mod abi;
+pub mod serialize;
 pub mod checksum;
 pub mod keys;
 pub mod name;
@@ -6,7 +6,7 @@ pub mod numeric;
 pub mod permission;
 pub mod time;
 
-pub use abi::*;
+pub use serialize::*;
 pub use checksum::*;
 pub use keys::*;
 pub use name::*;

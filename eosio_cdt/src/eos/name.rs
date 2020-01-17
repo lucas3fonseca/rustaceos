@@ -1,5 +1,5 @@
-use super::abi::AbiRead;
-use bytes::{Buf, Bytes};
+use super::EosSerialize;
+use bytes::{Buf, BufMut, Bytes, BytesMut};
 use std::cmp;
 
 pub struct Name {
@@ -84,10 +84,14 @@ impl Name {
     }
 }
 
-impl AbiRead for Name {
+impl EosSerialize for Name {
     fn read(bytes: &mut Bytes) -> Self {
         let value: u64 = bytes.get_u64_le();
         Name { value }
+    }
+
+    fn write(&self, buf: &mut BytesMut) {
+        buf.put_u64_le(self.value);
     }
 }
 

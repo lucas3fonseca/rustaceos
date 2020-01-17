@@ -1,6 +1,6 @@
-use bytes::{Buf, Bytes};
+use bytes::{Buf, Bytes, BufMut, BytesMut};
 use eosio_cdt::eos;
-use eosio_cdt::eos::{AbiRead, Checksum256, PublicKey};
+use eosio_cdt::eos::{EosSerialize, Checksum256, PublicKey};
 
 #[derive(Debug)]
 pub struct BlockPosition {
@@ -8,15 +8,18 @@ pub struct BlockPosition {
     pub block_id: Checksum256,
 }
 
-impl AbiRead for BlockPosition {
+impl EosSerialize for BlockPosition {
     fn read(buf: &mut Bytes) -> BlockPosition {
-        let block_num = buf.get_u32_le();
+        let block_num = u32::read(buf);
         let block_id = Checksum256::read(buf);
         BlockPosition {
             block_num,
             block_id,
         }
     }
+
+    // TODO
+    fn write(&self, bin: &mut BytesMut) {}
 }
 
 #[derive(Debug)]
@@ -32,7 +35,7 @@ pub struct BlockHeader {
     pub header_extensions: Vec<Extension>,
 }
 
-impl AbiRead for BlockHeader {
+impl EosSerialize for BlockHeader {
     fn read(buf: &mut Bytes) -> BlockHeader {
         let timestamp = buf.get_u32_le();
         let producer = buf.get_u64_le();
@@ -66,6 +69,9 @@ impl AbiRead for BlockHeader {
             header_extensions: vec![],
         }
     }
+
+    // TODO
+    fn write(&self, buf: &mut BytesMut) {}
 }
 
 #[derive(Debug)]
@@ -80,7 +86,7 @@ pub struct ProducerSchedule {
     pub producers: Vec<ProducerKey>,
 }
 
-impl AbiRead for ProducerSchedule {
+impl EosSerialize for ProducerSchedule {
     fn read(buf: &mut Bytes) -> ProducerSchedule {
         let version = buf.get_u32_le();
 
@@ -92,6 +98,9 @@ impl AbiRead for ProducerSchedule {
 
         ProducerSchedule { version, producers }
     }
+
+    // TODO
+    fn write(&self, buf: &mut BytesMut) {}
 }
 
 #[derive(Debug)]
@@ -100,7 +109,7 @@ pub struct ProducerKey {
     pub block_signing_key: PublicKey,
 }
 
-impl AbiRead for ProducerKey {
+impl EosSerialize for ProducerKey {
     fn read(buf: &mut Bytes) -> ProducerKey {
         let producer_name = buf.get_u64_le();
         let block_signing_key = PublicKey::read(buf);
@@ -110,4 +119,7 @@ impl AbiRead for ProducerKey {
             block_signing_key,
         }
     }
+
+    // TODO
+    fn write(&self, buf: &mut BytesMut) {}
 }

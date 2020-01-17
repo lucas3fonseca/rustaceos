@@ -1,5 +1,5 @@
-use super::abi::AbiRead;
-use bytes::{Buf, Bytes};
+use super::EosSerialize;
+use bytes::{Buf, BufMut, Bytes, BytesMut};
 use std::fmt;
 
 pub struct Checksum256 {
@@ -17,11 +17,17 @@ impl Checksum256 {
     }
 }
 
-impl AbiRead for Checksum256 {
+impl EosSerialize for Checksum256 {
     fn read(buf: &mut Bytes) -> Checksum256 {
         let mut value = [0; 32];
         buf.copy_to_slice(&mut value);
         Checksum256 { value }
+    }
+
+    fn write(&self, buf: &mut BytesMut) {
+        for v in &self.value {
+            buf.put_u8(*v);
+        }
     }
 }
 

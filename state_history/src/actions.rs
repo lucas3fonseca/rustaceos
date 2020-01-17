@@ -1,7 +1,7 @@
 use crate::blocks::Extension;
-use bytes::{Buf, Bytes};
+use bytes::{Buf, Bytes, BufMut, BytesMut};
 use eosio_cdt::eos;
-use eosio_cdt::eos::{AbiRead, Checksum256, PermissionLevel, Signature, TimePointSec};
+use eosio_cdt::eos::{EosSerialize, Checksum256, PermissionLevel, Signature, TimePointSec};
 
 #[derive(Debug)]
 pub struct TransactionTraceV0 {
@@ -20,7 +20,7 @@ pub struct TransactionTraceV0 {
     pub partial: Option<PartialTransactionV0>,
 }
 
-impl AbiRead for TransactionTraceV0 {
+impl EosSerialize for TransactionTraceV0 {
     fn read(buf: &mut Bytes) -> TransactionTraceV0 {
         let id = Checksum256::read(buf);
         let status = buf.get_u8();
@@ -47,6 +47,9 @@ impl AbiRead for TransactionTraceV0 {
             partial: None,
         }
     }
+
+    // TODO
+    fn write(&self, buf: &mut BytesMut) {}
 }
 
 #[derive(Debug)]
