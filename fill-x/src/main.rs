@@ -42,24 +42,17 @@ fn main() {
     let status_message = client
         .recv_message()
         .expect("Never received the SHIP status message");
-    print_ship_status(&status_message);
+    print_ship_status(status_message);
 
     let request_blocks = request_blocks_message();
     client.send_message(&request_blocks).unwrap();
 
     for message in client.incoming_messages() {
         let message: OwnedMessage = message.unwrap();
-        if let OwnedMessage::Binary(bin) = message {
-            let mut bin_bytes = Bytes::from(&bin[..]);
-            let block_response = GetBlocksResultV0::read(&mut bin_bytes);
-            println!("\n>>> {:?}", block_response);
-
-            if let Some(block) = block_response.this_block {
-                if block.block_num >= END_BLOCK {
-                    println!("reached end block, finishing...");
-                    break;
-                }
-            }
+        let processed_block = process_block(message);
+        if processed_block >= END_BLOCK {
+            println!("reached end block, finishing...");
+            break;
         }
     }
 
@@ -82,7 +75,7 @@ fn init_abi_definitions(message: &OwnedMessage) -> Result<Value, &'static str> {
 
 fn request_status_message<'a>() -> Message<'a> {
     let request = GetStatusRequestV0 {};
-    Message::binary(request.serialize())
+    Message::binary(request.write())
 }
 
 fn request_blocks_message<'a>() -> Message<'a> {
@@ -99,12 +92,25 @@ fn request_blocks_message<'a>() -> Message<'a> {
     Message::binary(request.write())
 }
 
-fn print_ship_status(message: &OwnedMessage) {
+fn print_ship_status(message: OwnedMessage) {
     if let OwnedMessage::Binary(bin) = message {
-        let mut bin_bytes = Bytes::from(&bin[..]);
+        let mut bin_bytes = Bytes::from(bin);
         let status_response = GetStatusResponseV0::read(&mut bin_bytes);
         println!("Status response {:?}", status_response);
     } else {
         panic!("Fail to parse the SHIP status message");
     }
+}
+
+fn process_block(message: OwnedMessage) -> u32 {
+    if let OwnedMessage::Binary(bin) = message {
+        let mut bin_bytes = Bytes::from(bin);
+        let block_response = GetBlocksResultV0::read(&mut bin_bytes);
+        println!("\n>>> {:?}", block_response);
+
+        if let Some(block) = block_response.this_block {
+            return block.block_num;
+        }
+    }
+    0
 }
