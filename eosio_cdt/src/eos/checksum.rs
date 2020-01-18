@@ -1,5 +1,4 @@
-// use bytes::{Buf, BufMut, Bytes, BytesMut};
-use serde::{Deserialize, Serialize};
+use super::{Deserialize, Serialize};
 use std::fmt;
 
 #[derive(Serialize, Deserialize)]
@@ -17,20 +16,6 @@ impl Checksum256 {
         hex_string
     }
 }
-
-// impl EosSerialize for Checksum256 {
-//     fn read(buf: &mut Bytes) -> Checksum256 {
-//         let mut value = [0; 32];
-//         buf.copy_to_slice(&mut value);
-//         Checksum256 { value }
-//     }
-
-//     fn write(&self, buf: &mut BytesMut) {
-//         for v in &self.value {
-//             buf.put_u8(*v);
-//         }
-//     }
-// }
 
 impl fmt::Display for Checksum256 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

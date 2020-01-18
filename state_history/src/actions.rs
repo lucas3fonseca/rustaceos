@@ -1,6 +1,4 @@
 use crate::blocks::Extension;
-use bytes::{Buf, BufMut, Bytes, BytesMut};
-use eosio_cdt::eos;
 use eosio_cdt::eos::{
     Checksum256, Deserialize, Name, PermissionLevel, Serialize, Signature, TimePointSec,
 };
@@ -10,49 +8,17 @@ pub struct TransactionTraceV0 {
     pub id: Checksum256,
     pub status: u8,
     pub cpu_usage_us: u32,
-    pub net_usage_words: u32, // todo varuint32
-    pub elapsed: i64,
-    pub net_usage: u64,
-    pub scheduled: bool,
-    pub action_traces: Vec<ActionTraceV0>,
-    pub account_ram_delta: Option<AccountDelta>,
-    pub except: Option<String>,
-    pub error_code: Option<u64>,
-    pub failed_dtrx_trace: Option<Box<TransactionTraceV0>>,
-    pub partial: Option<PartialTransactionV0>,
+    // pub net_usage_words: u32, // todo varuint32
+    // pub elapsed: i64,
+    // pub net_usage: u64,
+    // pub scheduled: bool,
+    // pub action_traces: Vec<ActionTraceV0>,
+    // pub account_ram_delta: Option<AccountDelta>,
+    // pub except: Option<String>,
+    // pub error_code: Option<u64>,
+    // pub failed_dtrx_trace: Option<Box<TransactionTraceV0>>,
+    // pub partial: Option<PartialTransactionV0>,
 }
-
-// impl EosSerialize for TransactionTraceV0 {
-//     fn read(buf: &mut Bytes) -> TransactionTraceV0 {
-//         let id = Checksum256::read(buf);
-//         let status = buf.get_u8();
-//         let cpu_usage_us = buf.get_u32_le();
-//         let net_usage_words = eos::read_varuint32(buf).unwrap();
-//         let elapsed = buf.get_i64_le();
-//         let net_usage = buf.get_u64_le();
-//         let scheduled = buf.get_u8() != 0;
-//         let action_traces = vec![];
-
-//         TransactionTraceV0 {
-//             id,
-//             status,
-//             cpu_usage_us,
-//             net_usage_words,
-//             elapsed,
-//             net_usage,
-//             scheduled,
-//             action_traces,
-//             account_ram_delta: None,
-//             except: None,
-//             error_code: None,
-//             failed_dtrx_trace: None,
-//             partial: None,
-//         }
-//     }
-
-//     // TODO
-//     fn write(&self, buf: &mut BytesMut) {}
-// }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PartialTransactionV0 {

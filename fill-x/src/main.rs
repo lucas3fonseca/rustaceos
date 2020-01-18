@@ -1,5 +1,4 @@
 // #[macro_use] extern crate log;
-// use bytes::{Bytes, BytesMut};
 use env_logger;
 use serde_json::Value;
 use websocket::{ClientBuilder, Message, OwnedMessage};
@@ -8,13 +7,13 @@ mod serialize;
 
 use eosio_cdt::eos::{eos_deserialize, eos_serialize};
 use state_history::{
-    GetBlocksRequestV0, GetBlocksResultV0, GetStatusRequestV0, GetStatusResponseV0, ShipRequests,
-    ShipResults, SignedBlockHeader, TransactionTraceV0,
+    GetBlocksRequestV0, GetStatusRequestV0, ShipRequests, ShipResults, SignedBlockHeader,
+    TransactionTraceV0,
 };
 
 static ADDRESS: &str = "http://localhost:8080";
-static INIT_BLOCK: u32 = 10;
-static END_BLOCK: u32 = 12;
+static INIT_BLOCK: u32 = 1;
+static END_BLOCK: u32 = 999999999;
 
 fn main() {
     env_logger::init();
@@ -77,11 +76,6 @@ fn init_abi_definitions(message: &OwnedMessage) -> Result<Value, &'static str> {
 fn request_status_message<'a>() -> Message<'a> {
     let request = GetStatusRequestV0 {};
     send_request(ShipRequests::GetStatus(request))
-    // let mut buf = BytesMut::new();
-    // request.write(&mut buf);
-    // let bytes = eos_serialize(&request)
-    //     .expect("fail to serialize status request");
-    // Message::binary(bytes)
 }
 
 fn request_blocks_message<'a>() -> Message<'a> {
@@ -96,12 +90,6 @@ fn request_blocks_message<'a>() -> Message<'a> {
         fetch_deltas: true,
     };
     send_request(ShipRequests::GetBlocks(request))
-    // // let mut buf = BytesMut::new();
-    // // request.write(&mut buf);
-    // let bytes = eos_serialize(&request)
-    //     .expect("fail to serialize blocks request");
-    // Message::binary(bytes)
-    // Message::binary(buf.to_vec())
 }
 
 fn send_request<'a>(request: ShipRequests) -> Message<'a> {
@@ -111,13 +99,8 @@ fn send_request<'a>(request: ShipRequests) -> Message<'a> {
 
 fn handle_response(message: OwnedMessage) -> ShipResults {
     if let OwnedMessage::Binary(bin) = message {
-        // let mut bin_bytes = Bytes::from(bin);
-        // let status_response = GetStatusResponseV0::read(&mut bin_bytes);
-        // Message::binary(bytes)
         let status_response: ShipResults =
             eos_deserialize(&bin).expect("fail to parse state history response");
-
-        // println!("Status response {:?}", status_response);
         status_response
     } else {
         panic!("not a binary message from ship");
@@ -131,27 +114,23 @@ fn print_ship_status(message: OwnedMessage) {
         }
         _ => panic!("Fail to parse the SHIP status message"),
     }
-    // if let OwnedMessage::Binary(bin) = message {
-    //     // let mut bin_bytes = Bytes::from(bin);
-    //     // let status_response = GetStatusResponseV0::read(&mut bin_bytes);
-    //     // Message::binary(bytes)
-    //     let status_response: GetStatusResponseV0 = eos_deserialize(&bin)
-    //         .expect("fail to parse status response");
-    //     println!("Status response {:?}", status_response);
-    // } else {
-    //     panic!("Fail to parse the SHIP status message");
-    // }
 }
 
 fn process_block(message: OwnedMessage) -> u32 {
     match handle_response(message) {
         ShipResults::GetBlocks(block_result) => {
-            println!("\n>>> {:?}", block_result);
+            println!("\n>>> Chain Head: {}", block_result.head.block_num);
             if let Some(block) = block_result.this_block {
-
                 if let Some(block_bytes) = block_result.block {
-                    let block_header: SignedBlockHeader = eos_deserialize(&block_bytes).unwrap();
+                    let block_header: SignedBlockHeader =
+                        eos_deserialize(&block_bytes).expect("fail to parse signed block header");
                     println!("Block Header >>> {:?}", block_header)
+                }
+
+                if let Some(trace_bytes) = block_result.traces {
+                    let trace: TransactionTraceV0 =
+                        eos_deserialize(&trace_bytes).expect("fail to parse block traces");
+                    println!("Trx Traces >>> {:?}", trace);
                 }
 
                 return block.block_num;
@@ -159,16 +138,5 @@ fn process_block(message: OwnedMessage) -> u32 {
         }
         _ => panic!("Fail to parse the SHIP block result"),
     }
-    // if let OwnedMessage::Binary(bin) = message {
-    //     // let mut bin_bytes = Bytes::from(bin);
-    //     // let block_response = GetBlocksResultV0::read(&mut bin_bytes);
-    //     let block_result: GetBlocksResultV0 = eos_deserialize(&bin)
-    //         .expect("fail to parse block result");
-    //     println!("\n>>> {:?}", block_result);
-
-    //     if let Some(block) = block_result.this_block {
-    //         return block.block_num;
-    //     }
-    // }
     0
 }

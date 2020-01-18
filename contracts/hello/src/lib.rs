@@ -1,6 +1,6 @@
 use bytes::Bytes;
 use eosio_cdt::eos;
-use eosio_cdt::eos::EosSerialize;
+use eosio_cdt::eos::{Deserialize, Serialize};
 use eosio_cdt::{print, require_auth, Action, Contract, EosError};
 
 pub struct HiAction {

@@ -1,8 +1,6 @@
-// use super::EosSerialize;
-// use bytes::{Buf, BufMut, Bytes, BytesMut};
 use std::cmp;
 
-use serde::{Deserialize, Serialize};
+use super::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Name {
@@ -86,17 +84,6 @@ impl Name {
         Ok(Name { value })
     }
 }
-
-// impl EosSerialize for Name {
-//     fn read(bytes: &mut Bytes) -> Self {
-//         let value: u64 = bytes.get_u64_le();
-//         Name { value }
-//     }
-
-//     fn write(&self, buf: &mut BytesMut) {
-//         buf.put_u64_le(self.value);
-//     }
-// }
 
 fn char_to_value(c: char) -> Result<u8, &'static str> {
     match c {

@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use super::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TimePointSec {
