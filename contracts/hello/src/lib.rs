@@ -14,7 +14,7 @@ impl Action for HiAction {
 
     fn execute(&self, contract: &Contract) {
         require_auth(contract.get_self());
-        let msg = format!("Hi, {}!", self.name.value);
+        let msg = format!("Hi, {}", self.name.value);
         print(msg.as_str());
     }
 }
