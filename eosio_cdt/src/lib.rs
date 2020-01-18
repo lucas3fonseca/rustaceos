@@ -1,3 +1,4 @@
+#![feature(const_fn, const_if_match, const_loop, const_panic, const_mut_refs)]
 #![allow(non_camel_case_types)]
 
 pub mod cdt;

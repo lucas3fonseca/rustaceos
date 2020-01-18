@@ -8,9 +8,7 @@ pub struct HiAction {
 }
 
 impl Action for HiAction {
-    const NAME: eos::Name = eos::Name {
-        value: 7746191359077253120u64,
-    }; //eos::Name::from("hi").unwrap();
+    const NAME: eos::Name = eos::name_from_str("hi");
 
     fn execute(&self, contract: &Contract) {
         require_auth(contract.get_self());

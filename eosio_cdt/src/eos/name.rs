@@ -1,5 +1,3 @@
-#![feature(const_fn, const_if_match, const_loop, const_panic, const_mut_refs)]
-
 use super::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -30,36 +28,36 @@ const fn min(l: usize, r: usize) -> usize {
 /// # Examples
 ///
 /// ```
-/// use eosio_cdt::eos::Name;
+/// use eosio_cdt::eos::name_from_str;
 ///
-/// let name = Name::from("").unwrap();
+/// let name = name_from_str("");
 /// assert_eq!(name.value, 0);
 ///
-/// let name = Name::from("abc").unwrap();
+/// let name = name_from_str("abc");
 /// assert_eq!(name.value, 3589368903014285312);
 ///
-/// let name = Name::from("123").unwrap();
+/// let name = name_from_str("123");
 /// assert_eq!(name.value, 614178399182651392);
 ///
-/// let name = Name::from("123.........").unwrap();
+/// let name = name_from_str("123.........");
 /// assert_eq!(name.value, 614178399182651392);
 ///
-/// let name = Name::from(".a.b.c.1.2.3.").unwrap();
+/// let name = name_from_str(".a.b.c.1.2.3.");
 /// assert_eq!(name.value, 108209673814966320);
 ///
-/// let name = Name::from("abc.123").unwrap();
+/// let name = name_from_str("abc.123");
 /// assert_eq!(name.value, 3589369488740450304);
 ///
-/// let name = Name::from("12345abcdefgj").unwrap();
+/// let name = name_from_str("12345abcdefgj");
 /// assert_eq!(name.value, 614251623682315983);
 ///
-/// let name = Name::from("hijklmnopqrsj").unwrap();
+/// let name = name_from_str("hijklmnopqrsj");
 /// assert_eq!(name.value, 7754926748989239183);
 ///
-/// let name = Name::from("1").unwrap();
+/// let name = name_from_str("1");
 /// assert_eq!(name.value, 576460752303423488);
 ///
-/// let name = Name::from("a").unwrap();
+/// let name = name_from_str("a");
 /// assert_eq!(name.value, 3458764513820540928);
 /// ```
 pub const fn name_from_str(name_str: &str) -> Name {
