@@ -2,7 +2,7 @@
 // use bytes::{Buf, BufMut, Bytes, BytesMut};
 use std::cmp;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Name {

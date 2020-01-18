@@ -1,9 +1,9 @@
 // use super::EosSerialize;
 // use bytes::{Buf, BufMut, Bytes, BytesMut};
+use generic_array::typenum::U33;
+use generic_array::{arr, GenericArray};
+use serde::{Deserialize, Serialize};
 use std::fmt;
-use serde::{Serialize, Deserialize};
-use generic_array::{GenericArray, arr};
-use generic_array::typenum::{U33};
 
 big_array! {
     BigArray;
@@ -37,9 +37,18 @@ pub struct Signature {
 
 #[test]
 fn test_keys_deserializes_properly() {
-    let public_key = PublicKey { r#type: KeyType::R1, data: arr![u8; 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5] };
+    let public_key = PublicKey {
+        r#type: KeyType::R1,
+        data: arr![u8; 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5],
+    };
     let bytes = bincode::serialize(&public_key).unwrap();
-    assert_eq!(bytes, vec![1, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]);
+    assert_eq!(
+        bytes,
+        vec![
+            1, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+            5, 5, 5, 5, 5
+        ]
+    );
 }
 
 // impl EosSerialize for PublicKey {

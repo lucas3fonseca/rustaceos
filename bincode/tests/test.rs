@@ -782,8 +782,5 @@ fn test_eos_serialization() {
     );
 
     let optional_none: Option<u64> = None;
-    assert_eq!(
-        serialize(&optional_none).unwrap(),
-        vec![0]
-    );
+    assert_eq!(serialize(&optional_none).unwrap(), vec![0]);
 }

@@ -1,9 +1,11 @@
 use crate::blocks::Extension;
-use bytes::{Buf, Bytes, BufMut, BytesMut};
+use bytes::{Buf, BufMut, Bytes, BytesMut};
 use eosio_cdt::eos;
-use eosio_cdt::eos::{EosSerialize, Checksum256, PermissionLevel, Signature, TimePointSec};
+use eosio_cdt::eos::{
+    Checksum256, Deserialize, PermissionLevel, Serialize, Signature, TimePointSec,
+};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TransactionTraceV0 {
     pub id: Checksum256,
     pub status: u8,
@@ -20,39 +22,39 @@ pub struct TransactionTraceV0 {
     pub partial: Option<PartialTransactionV0>,
 }
 
-impl EosSerialize for TransactionTraceV0 {
-    fn read(buf: &mut Bytes) -> TransactionTraceV0 {
-        let id = Checksum256::read(buf);
-        let status = buf.get_u8();
-        let cpu_usage_us = buf.get_u32_le();
-        let net_usage_words = eos::read_varuint32(buf).unwrap();
-        let elapsed = buf.get_i64_le();
-        let net_usage = buf.get_u64_le();
-        let scheduled = buf.get_u8() != 0;
-        let action_traces = vec![];
+// impl EosSerialize for TransactionTraceV0 {
+//     fn read(buf: &mut Bytes) -> TransactionTraceV0 {
+//         let id = Checksum256::read(buf);
+//         let status = buf.get_u8();
+//         let cpu_usage_us = buf.get_u32_le();
+//         let net_usage_words = eos::read_varuint32(buf).unwrap();
+//         let elapsed = buf.get_i64_le();
+//         let net_usage = buf.get_u64_le();
+//         let scheduled = buf.get_u8() != 0;
+//         let action_traces = vec![];
 
-        TransactionTraceV0 {
-            id,
-            status,
-            cpu_usage_us,
-            net_usage_words,
-            elapsed,
-            net_usage,
-            scheduled,
-            action_traces,
-            account_ram_delta: None,
-            except: None,
-            error_code: None,
-            failed_dtrx_trace: None,
-            partial: None,
-        }
-    }
+//         TransactionTraceV0 {
+//             id,
+//             status,
+//             cpu_usage_us,
+//             net_usage_words,
+//             elapsed,
+//             net_usage,
+//             scheduled,
+//             action_traces,
+//             account_ram_delta: None,
+//             except: None,
+//             error_code: None,
+//             failed_dtrx_trace: None,
+//             partial: None,
+//         }
+//     }
 
-    // TODO
-    fn write(&self, buf: &mut BytesMut) {}
-}
+//     // TODO
+//     fn write(&self, buf: &mut BytesMut) {}
+// }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PartialTransactionV0 {
     pub expiration: TimePointSec,
     pub ref_block_num: u16,
@@ -65,7 +67,7 @@ pub struct PartialTransactionV0 {
     pub context_free_data: Vec<u8>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ActionTraceV0 {
     pub action_ordinal: u32, // todo varuint32
     pub creator_action_ordinal: u32,
@@ -80,7 +82,7 @@ pub struct ActionTraceV0 {
     pub error_code: Option<u64>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ActionReceipt {
     pub receiver: u64, // name
     pub act_digest: Checksum256,
@@ -91,13 +93,13 @@ pub struct ActionReceipt {
     pub abi_sequence: u32,  // todo varuint32
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AccountAuthSequence {
     pub account: u64, // name
     pub sequence: u64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Action {
     pub account: u64, // name
     pub name: u64,    // name
@@ -105,7 +107,7 @@ pub struct Action {
     pub data: Vec<u8>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AccountDelta {
     pub account: u64, // name
     pub delta: i64,

@@ -57,13 +57,13 @@ pub fn execute_action<T: Action>(contract: &mut Contract) -> Result<(), EosError
 
     // let mut bytes_buf = Bytes::from(bytes);
     // let action_instance = T::read_data(&bytes)?;
-    let action_instance: Option<T> = bincode::deserialize(&bytes[..])
-        .expect("fail to decode action data");
+    let action_instance: Option<T> =
+        bincode::deserialize(&bytes[..]).expect("fail to decode action data");
 
     if let Some(action) = action_instance {
         contract.set_data_stream(bytes); //bytes_buf);
         action.execute(contract);
-        return Ok(())
+        return Ok(());
     }
 
     Err(EosError::FailToGetActionInstance)
