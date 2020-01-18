@@ -1,5 +1,8 @@
 #![allow(non_camel_case_types)]
 
+#[macro_use]
+extern crate serde_big_array;
+
 // use bytes::Bytes;
 use serde::de::DeserializeOwned;
 

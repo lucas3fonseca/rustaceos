@@ -1,8 +1,14 @@
 // use super::EosSerialize;
 // use bytes::{Buf, BufMut, Bytes, BytesMut};
 use std::fmt;
-
 use serde::{Serialize, Deserialize};
+use generic_array::{GenericArray, arr};
+use generic_array::typenum::{U33};
+
+big_array! {
+    BigArray;
+    +33,
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum KeyType {
@@ -11,10 +17,10 @@ pub enum KeyType {
     WA = 2,
 }
 
-// #[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct PublicKey {
     pub r#type: KeyType,
-    pub data: [u8; 33],
+    pub data: GenericArray<u8, U33>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -23,10 +29,17 @@ pub struct Signature {
     key_type: KeyType, // always k1
 }
 
-impl fmt::Debug for PublicKey {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "PubKey {:?} {:?}", self.r#type, &self.data[..32])
-    }
+// impl fmt::Debug for PublicKey {
+//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//         write!(f, "PubKey {:?} {:?}", self.r#type, &self.data[..32])
+//     }
+// }
+
+#[test]
+fn test_keys_deserializes_properly() {
+    let public_key = PublicKey { r#type: KeyType::R1, data: arr![u8; 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5] };
+    let bytes = bincode::serialize(&public_key).unwrap();
+    assert_eq!(bytes, vec![1, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]);
 }
 
 // impl EosSerialize for PublicKey {
