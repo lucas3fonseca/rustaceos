@@ -2,7 +2,7 @@ use crate::blocks::Extension;
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use eosio_cdt::eos;
 use eosio_cdt::eos::{
-    Checksum256, Deserialize, PermissionLevel, Serialize, Signature, TimePointSec,
+    Checksum256, Deserialize, Name, PermissionLevel, Serialize, Signature, TimePointSec,
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -72,7 +72,7 @@ pub struct ActionTraceV0 {
     pub action_ordinal: u32, // todo varuint32
     pub creator_action_ordinal: u32,
     pub receipt: Option<ActionReceipt>,
-    pub receiver: u64, // name
+    pub receiver: Name,
     pub act: Action,
     pub context_free: bool,
     pub elapsed: i64,
@@ -84,7 +84,7 @@ pub struct ActionTraceV0 {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ActionReceipt {
-    pub receiver: u64, // name
+    pub receiver: Name,
     pub act_digest: Checksum256,
     pub global_sequence: u64,
     pub recv_sequence: u64,
@@ -95,20 +95,20 @@ pub struct ActionReceipt {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AccountAuthSequence {
-    pub account: u64, // name
+    pub account: Name,
     pub sequence: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Action {
-    pub account: u64, // name
-    pub name: u64,    // name
+    pub account: Name,
+    pub name: Name,
     pub authorization: Vec<PermissionLevel>,
     pub data: Vec<u8>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AccountDelta {
-    pub account: u64, // name
+    pub account: Name,
     pub delta: i64,
 }

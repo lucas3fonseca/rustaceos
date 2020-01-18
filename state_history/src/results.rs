@@ -55,8 +55,8 @@ pub struct GetBlocksResultV0 {
     pub last_irreversible: BlockPosition,
     pub this_block: Option<BlockPosition>,
     pub prev_block: Option<BlockPosition>,
-    pub block: Option<BlockHeader>,
-    pub traces: Option<TransactionTraceV0>,
+    pub block: Option<Vec<u8>>,
+    pub traces: Option<Vec<u8>>,
     pub deltas: Option<Vec<u8>>,
 }
 

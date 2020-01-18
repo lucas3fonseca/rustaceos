@@ -1,6 +1,6 @@
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use eosio_cdt::eos;
-use eosio_cdt::eos::{Checksum256, Deserialize, PublicKey, Serialize};
+use eosio_cdt::eos::{Checksum256, Deserialize, Name, PublicKey, Serialize, Signature};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BlockPosition {
@@ -25,7 +25,7 @@ pub struct BlockPosition {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BlockHeader {
     pub timestamp: u32,
-    pub producer: u64, // todo: name
+    pub producer: Name,
     pub confirmed: u16,
     pub previous: Checksum256,
     pub transaction_mroot: Checksum256,
@@ -33,6 +33,12 @@ pub struct BlockHeader {
     pub schedule_version: u32,
     pub new_producers: Option<ProducerSchedule>,
     pub header_extensions: Vec<Extension>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SignedBlockHeader {
+  pub header: BlockHeader,
+  pub producer_signature: Signature,
 }
 
 // impl EosSerialize for BlockHeader {
@@ -105,7 +111,7 @@ pub struct ProducerSchedule {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ProducerKey {
-    pub producer_name: u64, // todo: name
+    pub producer_name: Name,
     pub block_signing_key: PublicKey,
 }
 

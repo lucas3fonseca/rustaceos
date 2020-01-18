@@ -9,7 +9,7 @@ mod serialize;
 use eosio_cdt::eos::{eos_deserialize, eos_serialize};
 use state_history::{
     GetBlocksRequestV0, GetBlocksResultV0, GetStatusRequestV0, GetStatusResponseV0, ShipRequests,
-    ShipResults,
+    ShipResults, SignedBlockHeader, TransactionTraceV0,
 };
 
 static ADDRESS: &str = "http://localhost:8080";
@@ -148,6 +148,12 @@ fn process_block(message: OwnedMessage) -> u32 {
         ShipResults::GetBlocks(block_result) => {
             println!("\n>>> {:?}", block_result);
             if let Some(block) = block_result.this_block {
+
+                if let Some(block_bytes) = block_result.block {
+                    let block_header: SignedBlockHeader = eos_deserialize(&block_bytes).unwrap();
+                    println!("Block Header >>> {:?}", block_header)
+                }
+
                 return block.block_num;
             }
         }
