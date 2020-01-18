@@ -51,8 +51,7 @@ pub fn execute_action<T: Action>(contract: &mut Contract) {
     let buffer = &mut bytes[..] as *mut _ as *mut c_void;
     unsafe { eosio_cdt_bindings::read_action_data(buffer, byte_size) };
 
-    let action_instance: T = bincode::deserialize(&bytes[..])
-        .expect("fail to decode action data");
+    let action_instance: T = bincode::deserialize(&bytes[..]).expect("fail to decode action data");
     contract.set_data_stream(bytes);
     action_instance.execute(contract);
 }
