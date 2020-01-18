@@ -2,11 +2,6 @@ use super::{Deserialize, Serialize};
 use generic_array::typenum::{U33, U65};
 use generic_array::GenericArray;
 
-big_array! {
-    BigArray;
-    +33,
-}
-
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Signature {
     K1(EccSignature),

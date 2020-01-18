@@ -1,9 +1,5 @@
 #![allow(non_camel_case_types)]
 
-#[macro_use]
-extern crate serde_big_array;
-
-// use bytes::Bytes;
 use serde::de::DeserializeOwned;
 
 pub mod eos;
@@ -49,24 +45,16 @@ pub trait Action: DeserializeOwned {
     fn execute(&self, contract: &Contract);
 }
 
-pub fn execute_action<T: Action>(contract: &mut Contract) -> Result<(), EosError> {
+pub fn execute_action<T: Action>(contract: &mut Contract) {
     let byte_size = unsafe { eosio_cdt_bindings::action_data_size() };
     let mut bytes: Vec<u8> = vec![0; byte_size as usize];
     let buffer = &mut bytes[..] as *mut _ as *mut c_void;
     unsafe { eosio_cdt_bindings::read_action_data(buffer, byte_size) };
 
-    // let mut bytes_buf = Bytes::from(bytes);
-    // let action_instance = T::read_data(&bytes)?;
-    let action_instance: Option<T> =
-        bincode::deserialize(&bytes[..]).expect("fail to decode action data");
-
-    if let Some(action) = action_instance {
-        contract.set_data_stream(bytes); //bytes_buf);
-        action.execute(contract);
-        return Ok(());
-    }
-
-    Err(EosError::FailToGetActionInstance)
+    let action_instance: T = bincode::deserialize(&bytes[..])
+        .expect("fail to decode action data");
+    contract.set_data_stream(bytes);
+    action_instance.execute(contract);
 }
 
 pub fn require_auth(account: &eos::Name) {

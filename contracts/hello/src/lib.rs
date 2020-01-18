@@ -1,8 +1,8 @@
-use bytes::Bytes;
 use eosio_cdt::eos;
 use eosio_cdt::eos::{Deserialize, Serialize};
-use eosio_cdt::{print, require_auth, Action, Contract, EosError};
+use eosio_cdt::{print, require_auth, Action, Contract};
 
+#[derive(Serialize, Deserialize)]
 pub struct HiAction {
     name: eos::Name,
 }
@@ -11,11 +11,6 @@ impl Action for HiAction {
     const NAME: eos::Name = eos::Name {
         value: 7746191359077253120u64,
     }; //eos::Name::from("hi").unwrap();
-
-    fn read_data(bytes: &mut Bytes) -> Result<Self, EosError> {
-        let name = eos::Name::read(bytes);
-        Ok(HiAction { name })
-    }
 
     fn execute(&self, contract: &Contract) {
         require_auth(contract.get_self());
