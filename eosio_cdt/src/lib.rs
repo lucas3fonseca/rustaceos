@@ -1,8 +1,8 @@
 #![allow(non_camel_case_types)]
 
-mod eosio_cdt_bindings;
 pub mod cdt;
 pub mod eos;
+mod eosio_cdt_bindings;
 
 pub use cdt::*;
 
