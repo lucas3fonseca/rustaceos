@@ -30,6 +30,7 @@ fn generate_eoscdt_bindings() {
         .whitelist_function("send_inline")
         .whitelist_function("send_context_free_inline")
         .whitelist_function("prints_l")
+        .whitelist_function("printn")
         .ctypes_prefix("crate")
         .trust_clang_mangling(false)
         .clang_args(clang_args);

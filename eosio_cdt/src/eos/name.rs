@@ -83,6 +83,10 @@ impl Name {
 
         Ok(Name { value })
     }
+
+    pub fn to_string() -> String {
+        String::from("hello")
+    }
 }
 
 fn char_to_value(c: char) -> Result<u8, &'static str> {
