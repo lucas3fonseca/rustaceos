@@ -18,11 +18,11 @@ pub struct TransactionTraceV0 {
     pub net_usage: u64,
     pub scheduled: bool,
     pub action_traces: Vec<ActionTraceV0>,
-    // pub account_ram_delta: Option<AccountDelta>,
-    // pub except: Option<String>,
-    // pub error_code: Option<u64>,
-    // pub failed_dtrx_trace: Option<Box<TransactionTraceV0>>,
-    // pub partial: Option<PartialTransactionV0>,
+    pub account_ram_delta: Option<AccountDelta>,
+    pub except: Option<String>,
+    pub error_code: Option<u64>,
+    pub failed_dtrx_trace: Option<Box<TransactionTraceV0>>,
+    pub partial: Option<PartialTransactionV0>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

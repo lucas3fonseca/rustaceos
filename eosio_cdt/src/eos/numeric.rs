@@ -69,7 +69,6 @@ impl<'de> Deserialize<'de> for Varuint32 {
 
                 let value = n | ((final_byte as usize) << shift);
 
-                println!("varuint val {}", value);
                 Ok(Varuint32(value as u32))
             }
         }
