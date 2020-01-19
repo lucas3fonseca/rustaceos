@@ -37,7 +37,6 @@ impl<'de> Deserialize<'de> for Varuint32 {
     where
         D: Deserializer<'de>,
     {
-
         struct Varuint32Visitor;
 
         impl<'de> Visitor<'de> for Varuint32Visitor {
@@ -113,15 +112,21 @@ fn test_varuint32_deserialization() {
     assert_eq!(eos_deserialize::<Varuint32>(&v230).unwrap(), Varuint32(230));
 
     let v2048 = [128, 16];
-    assert_eq!(eos_deserialize::<Varuint32>(&v2048).unwrap(), Varuint32(2048));
+    assert_eq!(
+        eos_deserialize::<Varuint32>(&v2048).unwrap(),
+        Varuint32(2048)
+    );
 
     let full = [255, 255, 255, 255, 15];
-    assert_eq!(eos_deserialize::<Varuint32>(&full).unwrap(), Varuint32(4294967295));
+    assert_eq!(
+        eos_deserialize::<Varuint32>(&full).unwrap(),
+        Varuint32(4294967295)
+    );
 }
 
 #[test]
 fn test_varuint32_structs_serializations() {
-    use super::{eos_serialize, eos_deserialize};
+    use super::{eos_deserialize, eos_serialize};
 
     #[derive(Debug, PartialEq, Serialize, Deserialize)]
     struct Test {
