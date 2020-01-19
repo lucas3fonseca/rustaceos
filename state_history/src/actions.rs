@@ -17,7 +17,7 @@ pub struct TransactionTraceV0 {
     pub elapsed: i64,
     pub net_usage: u64,
     pub scheduled: bool,
-    // pub action_traces: Vec<ActionTraceV0>,
+    pub action_traces: Vec<ActionTraceV0>,
     // pub account_ram_delta: Option<AccountDelta>,
     // pub except: Option<String>,
     // pub error_code: Option<u64>,
@@ -30,9 +30,9 @@ pub struct PartialTransactionV0 {
     pub expiration: TimePointSec,
     pub ref_block_num: u16,
     pub ref_block_prefix: u32,
-    pub max_net_usage_words: u32, // todo varuint32
+    pub max_net_usage_words: Varuint32,
     pub max_cpu_usage_ms: u8,
-    pub delay_sec: u32, // todo varuint32
+    pub delay_sec: Varuint32,
     pub transaction_extensions: Vec<Extension>,
     pub signatures: Vec<Signature>,
     pub context_free_data: Vec<u8>,
@@ -45,12 +45,12 @@ pub struct ActionTraceV0 {
     pub receipt: Option<ActionReceipt>,
     pub receiver: Name,
     pub act: Action,
-    pub context_free: bool,
-    pub elapsed: i64,
-    pub console: String,
-    pub account_ram_deltas: Vec<AccountDelta>,
-    pub except: Option<String>,
-    pub error_code: Option<u64>,
+    // pub context_free: bool,
+    // pub elapsed: i64,
+    // pub console: String,
+    // pub account_ram_deltas: Vec<AccountDelta>,
+    // pub except: Option<String>,
+    // pub error_code: Option<u64>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
