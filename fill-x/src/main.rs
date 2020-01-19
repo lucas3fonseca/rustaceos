@@ -7,13 +7,12 @@ mod serialize;
 
 use eosio_cdt::eos::{eos_deserialize, eos_serialize};
 use state_history::{
-    GetBlocksRequestV0, GetStatusRequestV0, ShipRequests, ShipResults, SignedBlockHeader,
-    TransactionTraceV0,
+    GetBlocksRequestV0, GetStatusRequestV0, ShipRequests, ShipResults, SignedBlockHeader, Traces,
 };
 
 static ADDRESS: &str = "http://localhost:8080";
-static INIT_BLOCK: u32 = 1;
-static END_BLOCK: u32 = 999999999;
+static INIT_BLOCK: u32 = 21;
+static END_BLOCK: u32 = 22;
 
 fn main() {
     env_logger::init();
@@ -124,13 +123,13 @@ fn process_block(message: OwnedMessage) -> u32 {
                 if let Some(block_bytes) = block_result.block {
                     let block_header: SignedBlockHeader =
                         eos_deserialize(&block_bytes).expect("fail to parse signed block header");
-                    println!("Block Header >>> {:?}", block_header)
+                    println!("Block {} Header >>> {:?}", block.block_num, block_header)
                 }
 
                 if let Some(trace_bytes) = block_result.traces {
-                    let trace: TransactionTraceV0 =
+                    let traces: Vec<Traces> =
                         eos_deserialize(&trace_bytes).expect("fail to parse block traces");
-                    println!("Trx Traces >>> {:?}", trace);
+                    println!("Trx Traces >>> {:?}", traces);
                 }
 
                 return block.block_num;
