@@ -20,7 +20,11 @@ impl Name {
 }
 
 const fn min(l: usize, r: usize) -> usize {
-    if l < r { l } else { r }
+    if l < r {
+        l
+    } else {
+        r
+    }
 }
 
 /// EOS Account Name from String
@@ -103,4 +107,64 @@ const fn char_to_value(c: u8) -> u8 {
         b'a'..=b'z' => (c - b'a') + 6,
         _ => panic!("character is not in allowed character set for names"),
     }
+}
+
+const CHAR_MAP: &str = ".12345abcdefghijklmnopqrstuvwxyz";
+const CHAR_MASK: u64 = 0xF800000000000000;
+
+pub fn name_to_string(name: Name) -> String {
+    let mut buffer = ['.'; 13];
+
+    let mut v: u64 = name.value;
+
+    let mut i = 0;
+    loop {
+        if v == 0 {
+            break;
+        }
+
+        let index_correction = if i == 12 { 60 } else { 59 };
+        let index_char = (v & CHAR_MASK) >> index_correction;
+        buffer[i] = CHAR_MAP.chars().nth(index_char as usize).unwrap();
+
+        v <<= 5;
+        i += 1;
+    }
+
+    if i == 0 {
+        i += 1
+    };
+
+    let name_string: String = buffer[..i].into_iter().collect();
+    name_string
+}
+
+#[test]
+fn test_name_to_string_basics() {
+    let value = 0;
+    assert_eq!(name_to_string(Name { value }), ".");
+
+    let value = 3589368903014285312;
+    assert_eq!(name_to_string(Name { value }), "abc");
+
+    let value = 614178399182651392;
+    assert_eq!(name_to_string(Name { value }), "123");
+
+    let value = 108209673814966326;
+    assert_eq!(name_to_string(Name { value }), ".a.b.c.1.2.3a");
+
+    let value = 3589369488740450304;
+    assert_eq!(name_to_string(Name { value }), "abc.123");
+
+    let value = 614251623682315983;
+    assert_eq!(name_to_string(Name { value }), "12345abcdefgj");
+
+    let value = 7754926748989239183;
+    assert_eq!(name_to_string(Name { value }), "hijklmnopqrsj");
+
+    let value = 576460752303423488;
+    assert_eq!(name_to_string(Name { value }), "1");
+
+    let value = 3458764513820540928;
+    assert_eq!(name_to_string(Name { value }), "a");
 }

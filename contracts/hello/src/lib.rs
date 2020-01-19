@@ -20,7 +20,7 @@ impl Action for HiAction {
 pub extern "C" fn apply(receiver: u64, code: u64, action: u64) {
     let mut contract = Contract::new(eos::Name::new(receiver), eos::Name::new(code));
 
-    if contract.call_action() {
+    if contract.is_contract_code() {
         if action == HiAction::NAME.value {
             eosio_cdt::execute_action::<HiAction>(&mut contract);
         } else {

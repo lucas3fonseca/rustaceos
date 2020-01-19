@@ -19,11 +19,15 @@ impl Contract {
         self.data_stream = Some(data_stream);
     }
 
-    pub fn call_action(&self) -> bool {
+    pub fn is_contract_code(&self) -> bool {
         self.contract.value == self.code.value
     }
 
     pub fn get_self(&self) -> &eos::Name {
         &self.contract
+    }
+
+    pub fn get_code(&self) -> &eos::Name {
+        &self.code
     }
 }
