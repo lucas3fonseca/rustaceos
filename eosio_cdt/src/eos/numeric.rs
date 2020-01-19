@@ -1,6 +1,5 @@
 use std::fmt;
 
-use bytes::{Buf, Bytes};
 use serde::de::{SeqAccess, Visitor};
 use serde::ser::SerializeTuple;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
