@@ -1,6 +1,10 @@
-use bytes::{Buf, Bytes};
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
+use std::fmt;
 
+use bytes::{Buf, Bytes};
+use serde::de::{SeqAccess, Visitor};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+#[derive(Debug)]
 pub struct Varuint32(u32);
 
 impl Serialize for Varuint32 {
@@ -23,32 +27,45 @@ impl Serialize for Varuint32 {
     }
 }
 
-impl<'de> Deserialize<'de> for Varuint32 {
-    fn deserialize<D>(deserializer: D) -> Result<Varuint32, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        use std::mem::size_of;
+struct Varuint32Visitor;
 
+impl<'de> Visitor<'de> for Varuint32Visitor {
+    type Value = Varuint32;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("a variant integer")
+    }
+
+    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+    where
+        A: SeqAccess<'de>,
+    {
         let mut n = 0;
         let mut shift = 0;
-        let mut byte: u8 = Deserialize::deserialize(&mut deserializer)?;
 
-        // Only allow reading size_of + 1 bytes to avoid overflows on bitshifts
-        for _ in 0..(size_of::<usize>()) {
+        let mut final_byte = 0;
+        while let Some(byte) = seq.next_element::<u8>()? {
             if byte < 128 {
                 break;
             }
 
             n |= ((byte & 127) as usize) << shift;
             shift += 7;
-            byte = Deserialize::deserialize(deserializer)?;
+
+            final_byte = byte;
         }
 
-        let value = n | ((byte as usize) << shift);
-        // Ok(Varuint32(value))
-        // let s = String::deserialize(deserializer)?;
+        let value = n | ((final_byte as usize) << shift);
         Ok(Varuint32(value as u32))
+    }
+}
+
+impl<'de> Deserialize<'de> for Varuint32 {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_seq(Varuint32Visitor)
     }
 }
 
