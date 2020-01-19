@@ -5,7 +5,7 @@ use serde::de::{SeqAccess, Visitor};
 use serde::ser::SerializeTuple;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Varuint32(u32);
 
 impl Serialize for Varuint32 {
@@ -61,30 +61,13 @@ impl<'de> Deserialize<'de> for Varuint32 {
                     let byte: u8 = elem;
 
                     if byte < 128 {
+                        final_byte = byte;
                         break;
                     }
 
                     n |= ((byte & 127) as usize) << shift;
                     shift += 7;
-
-                    final_byte = byte;
                 }
-
-                // while let Some(byte) = seq.next_element::<u8>()? {
-                // let mut byte_opt = seq.next_element::<u8>()?;
-                // while byte_opt.is_some() {
-                //     let byte = byte_opt.unwrap();
-                //     if byte < 128 {
-                //         break;
-                //     }
-
-                //     n |= ((byte & 127) as usize) << shift;
-                //     shift += 7;
-
-                //     final_byte = byte;
-
-                //     byte_opt = seq.next_element::<u8>()?;
-                // }
 
                 let value = n | ((final_byte as usize) << shift);
 
@@ -93,30 +76,8 @@ impl<'de> Deserialize<'de> for Varuint32 {
             }
         }
 
-        deserializer.deserialize_seq(Varuint32Visitor)
+        deserializer.deserialize_tuple(8, Varuint32Visitor)
     }
-}
-
-pub fn read_varuint32(buf: &mut Bytes) -> Result<u32, &'static str> {
-    let mut value: u32 = 0;
-    let mut shift = 0;
-
-    loop {
-        let current_byte = buf.get_u8();
-        value |= (current_byte & 0x7f) as u32;
-        value = value << shift;
-
-        if (current_byte & 0x80) == 0 {
-            break;
-        }
-
-        shift += 7;
-        if shift >= 35 {
-            return Err("invalid varuint32 encoding");
-        }
-    }
-
-    Ok(value)
 }
 
 #[test]
@@ -137,4 +98,47 @@ fn test_varuint32_serialization() {
 
     let full = Varuint32(4294967295);
     assert_eq!(eos_serialize(&full).unwrap(), [255, 255, 255, 255, 15]);
+}
+
+#[test]
+fn test_varuint32_deserialization() {
+    use super::eos_deserialize;
+
+    let zero = [0];
+    assert_eq!(eos_deserialize::<Varuint32>(&zero).unwrap(), Varuint32(0));
+
+    let one = [1];
+    assert_eq!(eos_deserialize::<Varuint32>(&one).unwrap(), Varuint32(1));
+
+    let v230 = [230, 1];
+    assert_eq!(eos_deserialize::<Varuint32>(&v230).unwrap(), Varuint32(230));
+
+    let v2048 = [128, 16];
+    assert_eq!(eos_deserialize::<Varuint32>(&v2048).unwrap(), Varuint32(2048));
+
+    let full = [255, 255, 255, 255, 15];
+    assert_eq!(eos_deserialize::<Varuint32>(&full).unwrap(), Varuint32(4294967295));
+}
+
+#[test]
+fn test_varuint32_structs_serializations() {
+    use super::{eos_serialize, eos_deserialize};
+
+    #[derive(Debug, PartialEq, Serialize, Deserialize)]
+    struct Test {
+        init_block: u32,
+        net_usage: Varuint32,
+        message: String,
+    }
+
+    let test1 = Test {
+        init_block: 123456,
+        net_usage: Varuint32(2048),
+        message: String::from("Hello world!"),
+    };
+
+    let bytes = eos_serialize(&test1).unwrap();
+    let test2: Test = eos_deserialize(&bytes).unwrap();
+
+    assert_eq!(test1, test2);
 }
