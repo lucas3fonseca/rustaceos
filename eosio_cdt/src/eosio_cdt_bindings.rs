@@ -79,6 +79,31 @@ extern "C" {
     pub fn prints_l(cstr: *const crate::c_char, len: u32);
 }
 extern "C" {
+    #[doc = " Prints value as a 64 bit signed integer"]
+    #[doc = ""]
+    #[doc = " @brief Prints value as a 64 bit signed integer"]
+    #[doc = " @param value of 64 bit signed integer to be printed"]
+    #[doc = ""]
+    #[doc = "  Example:"]
+    #[doc = ""]
+    #[doc = "  @code"]
+    #[doc = "  printi(-1e+18); // Output: -1000000000000000000"]
+    #[doc = "  @endcode"]
+    pub fn printi(value: i64);
+}
+extern "C" {
+    #[doc = " Prints value as a 64 bit unsigned integer"]
+    #[doc = ""]
+    #[doc = " @param value of 64 bit unsigned integer to be printed"]
+    #[doc = ""]
+    #[doc = "  Example:"]
+    #[doc = ""]
+    #[doc = "  @code"]
+    #[doc = "  printui(1e+18); // Output: 1000000000000000000"]
+    #[doc = "  @endcode"]
+    pub fn printui(value: u64);
+}
+extern "C" {
     #[doc = " Prints a 64 bit names as base32 encoded string"]
     #[doc = ""]
     #[doc = " @param name - 64 bit name to be printed"]
@@ -90,7 +115,10 @@ extern "C" {
     pub fn printn(name: u64);
 }
 extern "C" {
-    pub fn printi(value: i64);
-    pub fn printui(value: u64);
+    #[doc = "  Aborts processing of this action and unwinds all pending changes if the test condition is true"]
+    #[doc = ""]
+    #[doc = "  @param test - 0 to abort, 1 to ignore"]
+    #[doc = "  @param msg - a pointer to the start of string explaining the reason for failure"]
+    #[doc = "  @param msg_len - length of the string"]
     pub fn eosio_assert_message(test: u32, msg: *const crate::c_char, msg_len: u32);
 }
