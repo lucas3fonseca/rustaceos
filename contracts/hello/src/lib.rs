@@ -28,3 +28,8 @@ pub extern "C" fn apply(receiver: u64, code: u64, action: u64) {
         }
     }
 }
+
+#[eosio_cdt::action]
+fn hello(owner: eos::Name) {
+    println!("hello {}", owner.value);
+}

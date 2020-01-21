@@ -145,8 +145,18 @@ version = "0.1.0"
 dependencies = [
  "bincode",
  "bindgen",
+ "eosio_cdt_macro",
  "generic-array",
  "serde",
+]
+
+[[package]]
+name = "eosio_cdt_macro"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
