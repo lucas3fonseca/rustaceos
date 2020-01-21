@@ -12,5 +12,4 @@ lto = true
 
 [dependencies]
 eosio_cdt = { path = "../../eosio_cdt" }
-bytes = "0.5.3"
 serde = { version = "1.0.63", features = ["derive"] }
