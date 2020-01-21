@@ -78,3 +78,14 @@ extern "C" {
     #[doc = "  @endcode"]
     pub fn prints_l(cstr: *const crate::c_char, len: u32);
 }
+extern "C" {
+    #[doc = " Prints a 64 bit names as base32 encoded string"]
+    #[doc = ""]
+    #[doc = " @param name - 64 bit name to be printed"]
+    #[doc = ""]
+    #[doc = " Example:"]
+    #[doc = " @code"]
+    #[doc = " printn(\"abcde\"_n); // Output: abcde"]
+    #[doc = " @endcode"]
+    pub fn printn(name: u64);
+}

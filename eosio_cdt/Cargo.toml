@@ -9,4 +9,7 @@ build = "build.rs"
 bindgen = "0.51.1"
 
 [dependencies]
-bytes = "0.5.3"
+bincode = { path = "../bincode" }
+serde = { version = "1.0.63", features = ["derive"] }
+generic-array = { version = "0.13.2", features = ["serde"] }
+eosio_cdt_macro = { path = "./eosio_cdt_macro" }

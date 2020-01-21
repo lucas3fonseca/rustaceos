@@ -1,39 +1,28 @@
-use bytes::Bytes;
 use eosio_cdt::eos;
-use eosio_cdt::{print, require_auth, Action, Contract, EosError};
+use eosio_cdt::{print, require_auth, Action, Contract};
 
-pub struct HiAction {
-    name: eos::Name,
+#[eosio_cdt::action]
+fn hi(name: eos::Name) {
+    // require_auth(contract.get_self());
+    print!("Hi, ", name, "!");
 }
 
-impl Action for HiAction {
-    const NAME: eos::Name = eos::Name {
-        value: 7746191359077253120u64,
-    }; //eos::Name::new(123); //.unwrap();
-
-    fn read_data(bytes: &mut Bytes) -> Result<Self, EosError> {
-        let name = eos::Name::read(bytes);
-        Ok(HiAction { name })
-    }
-
-    fn execute(&self, contract: &Contract) {
-        require_auth(contract.get_self());
-        let msg = format!("Hi, {}", self.name.value);
-        print(msg.as_str());
-    }
+#[eosio_cdt::action]
+fn hello(owner: eos::Name) {
+    require_auth(&owner);
+    print!("hello ", owner);
 }
 
 #[no_mangle]
 pub extern "C" fn apply(receiver: u64, code: u64, action: u64) {
     let mut contract = Contract::new(eos::Name::new(receiver), eos::Name::new(code));
 
-    if contract.call_action() {
-        print("contract calling action");
-
-        if action == HiAction::NAME.value {
-            eosio_cdt::execute_action::<HiAction>(&mut contract);
-        } else {
-            print("Action not implemented");
+    if contract.is_contract_code() {
+        let action_name = eos::Name::new(action);
+        match action_name {
+            EOS_hiAction::NAME => eosio_cdt::execute_action::<EOS_hiAction>(&mut contract),
+            EOS_helloAction::NAME => eosio_cdt::execute_action::<EOS_helloAction>(&mut contract),
+            _ => print!("Action not implemented"),
         }
     }
 }

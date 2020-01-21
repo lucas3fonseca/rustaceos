@@ -12,6 +12,16 @@
       ]
     },
     {
+      "name": "hello",
+      "base": "",
+      "fields": [
+        {
+          "name": "owner",
+          "type": "name"
+        }
+      ]
+    },
+    {
       "name": "bye",
       "base": "",
       "fields": []
@@ -21,6 +31,10 @@
     {
       "name": "hi",
       "type": "hi"
+    },
+    {
+      "name": "hello",
+      "type": "hello"
     },
     {
       "name": "bye",

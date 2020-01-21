@@ -1,19 +1,16 @@
 use crate::blocks::BlockPosition;
-use abieos::AbiSerializer;
-use bytes::BufMut;
+use eosio_cdt::eos::{Deserialize, Serialize};
 
-// to use in the future when we generalize the requests functions
-// pub static ShipRequests: Variant = Variant {
-//   name: "request",
-//   types: [
-//     "get_status_request_v0",
-//     "get_blocks_request_v0",
-//     "get_blocks_ack_request_v0",
-//   ],
-// };
+#[derive(Serialize, Deserialize)]
+pub enum ShipRequests {
+    GetStatus(GetStatusRequestV0),
+    GetBlocks(GetBlocksRequestV0),
+}
 
+#[derive(Serialize, Deserialize)]
 pub struct GetStatusRequestV0;
 
+#[derive(Serialize, Deserialize)]
 pub struct GetBlocksRequestV0 {
     pub start_block_num: u32,
     pub end_block_num: u32,
@@ -23,45 +20,4 @@ pub struct GetBlocksRequestV0 {
     pub fetch_block: bool,
     pub fetch_traces: bool,
     pub fetch_deltas: bool,
-}
-
-impl AbiSerializer for GetStatusRequestV0 {
-    fn serialize(&self) -> Vec<u8> {
-        let mut buffer = Vec::new();
-
-        // todo: find it in static requests variant
-        let get_status_variant_index = 0;
-        abieos::push_varuint32(&mut buffer, get_status_variant_index);
-
-        buffer
-    }
-}
-
-impl AbiSerializer for GetBlocksRequestV0 {
-    fn serialize(&self) -> Vec<u8> {
-        let mut buf = vec![];
-
-        // todo: find it in static requests variant
-        let get_status_variant_index = 1;
-        buf.put_u8(get_status_variant_index);
-
-        buf.put_u32_le(self.start_block_num);
-        buf.put_u32_le(self.end_block_num);
-        buf.put_u32_le(self.max_messages_in_flight);
-
-        abieos::push_varuint32(&mut buf, self.have_positions.len() as u32);
-        for pos in &self.have_positions {
-            buf.put_u32_le(pos.block_num);
-            for v in &pos.block_id.value {
-                buf.put_u8(*v);
-            }
-        }
-
-        buf.put_u8(if self.irreversible_only { 1 } else { 0 });
-        buf.put_u8(if self.fetch_block { 1 } else { 0 });
-        buf.put_u8(if self.fetch_traces { 1 } else { 0 });
-        buf.put_u8(if self.fetch_deltas { 1 } else { 0 });
-
-        buf
-    }
 }

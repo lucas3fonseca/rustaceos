@@ -1,8 +1,10 @@
 [workspace]
 members = [
-    "abieos",
+    "bincode",
     "eosio_cdt",
     "fill-x",
     "state_history",
+]
+exclude = [
     "contracts/hello",
 ]
