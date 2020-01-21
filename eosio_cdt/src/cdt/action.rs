@@ -6,7 +6,7 @@ use crate::eosio_cdt_bindings;
 
 pub trait Action: DeserializeOwned {
     const NAME: eos::Name;
-    fn execute(&self, contract: &Contract);
+    fn execute(self, contract: &Contract);
 }
 
 pub fn execute_action<T: Action>(contract: &mut Contract) {

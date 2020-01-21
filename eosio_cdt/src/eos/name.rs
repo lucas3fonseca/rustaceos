@@ -1,6 +1,6 @@
 use super::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct Name {
     pub value: u64,
 }
