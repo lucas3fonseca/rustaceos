@@ -89,3 +89,8 @@ extern "C" {
     #[doc = " @endcode"]
     pub fn printn(name: u64);
 }
+extern "C" {
+    pub fn printi(value: i64);
+    pub fn printui(value: u64);
+    pub fn eosio_assert_message(test: u32, msg: *const crate::c_char, msg_len: u32);
+}

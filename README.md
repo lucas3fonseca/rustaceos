@@ -18,3 +18,26 @@ git submodule update --init --recursive
 cd fill-x
 cargo run
 ```
+
+### Basic setup for Contracts
+
+```
+rustup target add wasm32-unknown-unknown --toolchain nightly
+cargo install wasm-gc
+
+brew install binaryen
+
+# optional tool to debug contracts (converts wasm to wat)
+brew install wabt
+
+cd contracts/hello
+./build.sh
+
+# feel free to play with the generate wasms:
+# ./target/wasm32-unknown-unknown/release/hello.wasm >> full released wasm
+# ./hello_gc.wasm >> wasm optimized by wasm-gc
+# ./hello_gc_opt.wasm >> wasm-gc optimized by wasm-opt
+
+cleos set code hello hello_gc_opt.wasm
+cleos set abi hello helo.abi.json
+```

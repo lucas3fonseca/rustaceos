@@ -31,6 +31,9 @@ fn generate_eoscdt_bindings() {
         .whitelist_function("send_context_free_inline")
         .whitelist_function("prints_l")
         .whitelist_function("printn")
+        .whitelist_function("printi")
+        .whitelist_function("printui")
+        .whitelist_function("eosio_assert_message")
         .ctypes_prefix("crate")
         .trust_clang_mangling(false)
         .clang_args(clang_args);
