@@ -1,10 +1,14 @@
 use eosio_cdt;
 use eosio_cdt::eos;
+use eosio_cdt::{print, require_auth};
 
 mod age;
-mod hello;
-
 use age::*;
-use hello::*;
 
-eosio_cdt::abi!(hi, hello, checkage);
+eosio_cdt::abi!(hello, checkage);
+
+#[eosio_cdt::action]
+pub fn hello(owner: eos::Name) {
+    require_auth(&owner);
+    print!("Welcome ", owner);
+}

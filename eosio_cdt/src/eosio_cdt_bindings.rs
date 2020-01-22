@@ -66,6 +66,323 @@ extern "C" {
     pub fn send_context_free_inline(serialized_action: *mut crate::c_char, size: usize);
 }
 extern "C" {
+    #[doc = "  Store a record in a primary 64-bit integer index table"]
+    #[doc = ""]
+    #[doc = "  @brief Store a record in a primary 64-bit integer index table"]
+    #[doc = "  @param scope - The scope where the table resides (implied to be within the code of the current receiver)"]
+    #[doc = "  @param table - The table name"]
+    #[doc = "  @param payer - The account that pays for the storage costs"]
+    #[doc = "  @param id - ID of the entry"]
+    #[doc = "  @param data - Record to store"]
+    #[doc = "  @param len - Size of data"]
+    #[doc = "  @pre `data` is a valid pointer to a range of memory at least `len` bytes long"]
+    #[doc = "  @pre `*((uint64_t*)data)` stores the primary key"]
+    #[doc = "  @return iterator to the newly created table row"]
+    #[doc = "  @post a new entry is created in the table"]
+    pub fn db_store_i64(
+        scope: u64,
+        table: capi_name,
+        payer: capi_name,
+        id: u64,
+        data: *const crate::c_void,
+        len: u32,
+    ) -> i32;
+}
+extern "C" {
+    #[doc = "  Update a record in a primary 64-bit integer index table"]
+    #[doc = ""]
+    #[doc = "  @brief Update a record in a primary 64-bit integer index table"]
+    #[doc = "  @param iterator - Iterator to the table row containing the record to update"]
+    #[doc = "  @param payer - The account that pays for the storage costs (use 0 to continue using current payer)"]
+    #[doc = "  @param data - New updated record"]
+    #[doc = "  @param len - Size of data"]
+    #[doc = "  @pre `data` is a valid pointer to a range of memory at least `len` bytes long"]
+    #[doc = "  @pre `*((uint64_t*)data)` stores the primary key"]
+    #[doc = "  @pre `iterator` points to an existing table row in the table"]
+    #[doc = "  @post the record contained in the table row pointed to by `iterator` is replaced with the new updated record"]
+    pub fn db_update_i64(iterator: i32, payer: capi_name, data: *const crate::c_void, len: u32);
+}
+extern "C" {
+    #[doc = "  Remove a record from a primary 64-bit integer index table"]
+    #[doc = ""]
+    #[doc = "  @brief Remove a record from a primary 64-bit integer index table"]
+    #[doc = "  @param iterator - Iterator to the table row to remove"]
+    #[doc = "  @pre `iterator` points to an existing table row in the table"]
+    #[doc = "  @post the table row pointed to by `iterator` is removed and the associated storage costs are refunded to the payer"]
+    #[doc = ""]
+    #[doc = "  Example:"]
+    #[doc = ""]
+    #[doc = "  @code"]
+    #[doc = "  int32_t itr = db_find_i64(receiver, receiver, table1, \"alice\"_n);"]
+    #[doc = "  eosio_assert(itr >= 0, \"Alice cannot be removed since she was already not found in the table\");"]
+    #[doc = "  db_remove_i64(itr);"]
+    #[doc = "  @endcode"]
+    pub fn db_remove_i64(iterator: i32);
+}
+extern "C" {
+    #[doc = "  Get a record in a primary 64-bit integer index table"]
+    #[doc = ""]
+    #[doc = "  @brief Get a record in a primary 64-bit integer index table"]
+    #[doc = "  @param iterator - The iterator to the table row containing the record to retrieve"]
+    #[doc = "  @param data - Pointer to the buffer which will be filled with the retrieved record"]
+    #[doc = "  @param len - Size of the buffer"]
+    #[doc = "  @return size of the data copied into the buffer if `len > 0`, or size of the retrieved record if `len == 0`."]
+    #[doc = "  @pre `iterator` points to an existing table row in the table"]
+    #[doc = "  @pre `data` is a valid pointer to a range of memory at least `len` bytes long"]
+    #[doc = "  @post `data` will be filled with the retrieved record (truncated to the first `len` bytes if necessary)"]
+    #[doc = ""]
+    #[doc = "  Example:"]
+    #[doc = ""]
+    #[doc = "  @code"]
+    #[doc = "  char value[50];"]
+    #[doc = "  auto len = db_get_i64(itr, value, 0);"]
+    #[doc = "  eosio_assert(len <= 50, \"buffer to small to store retrieved record\");"]
+    #[doc = "  db_get_i64(itr, value, len);"]
+    #[doc = "  @endcode"]
+    pub fn db_get_i64(iterator: i32, data: *const crate::c_void, len: u32) -> i32;
+}
+extern "C" {
+    #[doc = "  Find the table row following the referenced table row in a primary 64-bit integer index table"]
+    #[doc = ""]
+    #[doc = "  @brief Find the table row following the referenced table row in a primary 64-bit integer index table"]
+    #[doc = "  @param iterator - The iterator to the referenced table row"]
+    #[doc = "  @param primary - Pointer to a `uint64_t` variable which will have its value set to the primary key of the next table row"]
+    #[doc = "  @return iterator to the table row following the referenced table row (or the end iterator of the table if the referenced table row is the last one in the table)"]
+    #[doc = "  @pre `iterator` points to an existing table row in the table"]
+    #[doc = "  @post `*primary` will be replaced with the primary key of the table row following the referenced table row if it exists, otherwise `*primary` will be left untouched"]
+    #[doc = ""]
+    #[doc = "  Example:"]
+    #[doc = ""]
+    #[doc = "  @code"]
+    #[doc = "  int32_t charlie_itr = db_find_i64(receiver, receiver, table1, \"charlie\"_n);"]
+    #[doc = "  // expect nothing after charlie"]
+    #[doc = "  uint64_t prim = 0"]
+    #[doc = "  int32_t  end_itr = db_next_i64(charlie_itr, &prim);"]
+    #[doc = "  eosio_assert(end_itr < -1, \"Charlie was not the last entry in the table\");"]
+    #[doc = "  @endcode"]
+    pub fn db_next_i64(iterator: i32, primary: *mut u64) -> i32;
+}
+extern "C" {
+    #[doc = "  Find the table row preceding the referenced table row in a primary 64-bit integer index table"]
+    #[doc = ""]
+    #[doc = "  @brief Find the table row preceding the referenced table row in a primary 64-bit integer index table"]
+    #[doc = "  @param iterator - The iterator to the referenced table row"]
+    #[doc = "  @param primary - Pointer to a `uint64_t` variable which will have its value set to the primary key of the previous table row"]
+    #[doc = "  @return iterator to the table row preceding the referenced table row assuming one exists (it will return -1 if the referenced table row is the first one in the table)"]
+    #[doc = "  @pre `iterator` points to an existing table row in the table or it is the end iterator of the table"]
+    #[doc = "  @post `*primary` will be replaced with the primary key of the table row preceding the referenced table row if it exists, otherwise `*primary` will be left untouched"]
+    #[doc = ""]
+    #[doc = "  Example:"]
+    #[doc = ""]
+    #[doc = "  @code"]
+    #[doc = "  uint64_t prim = 0;"]
+    #[doc = "  int32_t  itr_prev = db_previous_i64(itr, &prim);"]
+    #[doc = "  @endcode"]
+    pub fn db_previous_i64(iterator: i32, primary: *mut u64) -> i32;
+}
+extern "C" {
+    #[doc = "  Find a table row in a primary 64-bit integer index table by primary key"]
+    #[doc = ""]
+    #[doc = "  @brief Find a table row in a primary 64-bit integer index table by primary key"]
+    #[doc = "  @param code - The name of the owner of the table"]
+    #[doc = "  @param scope - The scope where the table resides"]
+    #[doc = "  @param table - The table name"]
+    #[doc = "  @param id - The primary key of the table row to look up"]
+    #[doc = "  @return iterator to the table row with a primary key equal to `id` or the end iterator of the table if the table row could not be found"]
+    #[doc = ""]
+    #[doc = "  Example:"]
+    #[doc = ""]
+    #[doc = "  @code"]
+    #[doc = "  int itr = db_find_i64(receiver, receiver, table1, \"charlie\"_n);"]
+    #[doc = "  @endcode"]
+    pub fn db_find_i64(code: capi_name, scope: u64, table: capi_name, id: u64) -> i32;
+}
+extern "C" {
+    #[doc = "  Find the table row in a primary 64-bit integer index table that matches the lowerbound condition for a given primary key"]
+    #[doc = "  The table row that matches the lowerbound condition is the first table row in the table with the lowest primary key that is >= the given key"]
+    #[doc = ""]
+    #[doc = "  @brief Find the table row in a primary 64-bit integer index table that matches the lowerbound condition for a given primary key"]
+    #[doc = "  @param code - The name of the owner of the table"]
+    #[doc = "  @param scope - The scope where the table resides"]
+    #[doc = "  @param table - The table name"]
+    #[doc = "  @param id - The primary key used to determine the lowerbound"]
+    #[doc = "  @return iterator to the found table row or the end iterator of the table if the table row could not be found"]
+    pub fn db_lowerbound_i64(code: capi_name, scope: u64, table: capi_name, id: u64) -> i32;
+}
+extern "C" {
+    #[doc = "  Find the table row in a primary 64-bit integer index table that matches the upperbound condition for a given primary key"]
+    #[doc = "  The table row that matches the upperbound condition is the first table row in the table with the lowest primary key that is > the given key"]
+    #[doc = ""]
+    #[doc = "  @brief Find the table row in a primary 64-bit integer index table that matches the upperbound condition for a given primary key"]
+    #[doc = "  @param code - The name of the owner of the table"]
+    #[doc = "  @param scope - The scope where the table resides"]
+    #[doc = "  @param table - The table name"]
+    #[doc = "  @param id - The primary key used to determine the upperbound"]
+    #[doc = "  @return iterator to the found table row or the end iterator of the table if the table row could not be found"]
+    pub fn db_upperbound_i64(code: capi_name, scope: u64, table: capi_name, id: u64) -> i32;
+}
+extern "C" {
+    #[doc = "  Get an iterator representing just-past-the-end of the last table row of a primary 64-bit integer index table"]
+    #[doc = ""]
+    #[doc = "  @brief Get an iterator representing just-past-the-end of the last table row of a primary 64-bit integer index table"]
+    #[doc = "  @param code - The name of the owner of the table"]
+    #[doc = "  @param scope - The scope where the table resides"]
+    #[doc = "  @param table - The table name"]
+    #[doc = "  @return end iterator of the table"]
+    pub fn db_end_i64(code: capi_name, scope: u64, table: capi_name) -> i32;
+}
+extern "C" {
+    #[doc = "  Store an association of a 64-bit integer secondary key to a primary key in a secondary 64-bit integer index table"]
+    #[doc = ""]
+    #[doc = "  @brief Store an association of a 64-bit integer secondary key to a primary key in a secondary 64-bit integer index table"]
+    #[doc = "  @param scope - The scope where the table resides (implied to be within the code of the current receiver)"]
+    #[doc = "  @param table - The table name"]
+    #[doc = "  @param payer - The account that pays for the storage costs"]
+    #[doc = "  @param id - The primary key to which to associate the secondary key"]
+    #[doc = "  @param secondary - Pointer to the secondary key"]
+    #[doc = "  @return iterator to the newly created table row"]
+    #[doc = "  @post new secondary key association between primary key `id` and secondary key `*secondary` is created in the secondary 64-bit integer index table"]
+    pub fn db_idx64_store(
+        scope: u64,
+        table: capi_name,
+        payer: capi_name,
+        id: u64,
+        secondary: *const u64,
+    ) -> i32;
+}
+extern "C" {
+    #[doc = "  Update an association for a 64-bit integer secondary key to a primary key in a secondary 64-bit integer index table"]
+    #[doc = ""]
+    #[doc = "  @brief Update an association for a 64-bit integer secondary key to a primary key in a secondary 64-bit integer index table"]
+    #[doc = "  @param iterator - The iterator to the table row containing the secondary key association to update"]
+    #[doc = "  @param payer - The account that pays for the storage costs (use 0 to continue using current payer)"]
+    #[doc = "  @param secondary - Pointer to the **new** secondary key that will replace the existing one of the association"]
+    #[doc = "  @pre `iterator` points to an existing table row in the table"]
+    #[doc = "  @post the secondary key of the table row pointed to by `iterator` is replaced by `*secondary`"]
+    pub fn db_idx64_update(iterator: i32, payer: capi_name, secondary: *const u64);
+}
+extern "C" {
+    #[doc = "  Remove a table row from a secondary 64-bit integer index table"]
+    #[doc = ""]
+    #[doc = "  @brief Remove a table row from a secondary 64-bit integer index table"]
+    #[doc = "  @param iterator - Iterator to the table row to remove"]
+    #[doc = "  @pre `iterator` points to an existing table row in the table"]
+    #[doc = "  @post the table row pointed to by `iterator` is removed and the associated storage costs are refunded to the payer"]
+    pub fn db_idx64_remove(iterator: i32);
+}
+extern "C" {
+    #[doc = "  Find the table row following the referenced table row in a secondary 64-bit integer index table"]
+    #[doc = ""]
+    #[doc = "  @brief Find the table row following the referenced table row in a secondary 64-bit integer index table"]
+    #[doc = "  @param iterator - The iterator to the referenced table row"]
+    #[doc = "  @param primary - Pointer to a `uint64_t` variable which will have its value set to the primary key of the next table row"]
+    #[doc = "  @return iterator to the table row following the referenced table row (or the end iterator of the table if the referenced table row is the last one in the table)"]
+    #[doc = "  @pre `iterator` points to an existing table row in the table"]
+    #[doc = "  @post `*primary` will be replaced with the primary key of the table row following the referenced table row if it exists, otherwise `*primary` will be left untouched"]
+    pub fn db_idx64_next(iterator: i32, primary: *mut u64) -> i32;
+}
+extern "C" {
+    #[doc = "  Find the table row preceding the referenced table row in a secondary 64-bit integer index table"]
+    #[doc = ""]
+    #[doc = "  @brief Find the table row preceding the referenced table row in a secondary 64-bit integer index table"]
+    #[doc = "  @param iterator - The iterator to the referenced table row"]
+    #[doc = "  @param primary - Pointer to a `uint64_t` variable which will have its value set to the primary key of the previous table row"]
+    #[doc = "  @return iterator to the table row preceding the referenced table row assuming one exists (it will return -1 if the referenced table row is the first one in the table)"]
+    #[doc = "  @pre `iterator` points to an existing table row in the table or it is the end iterator of the table"]
+    #[doc = "  @post `*primary` will be replaced with the primary key of the table row preceding the referenced table row if it exists, otherwise `*primary` will be left untouched"]
+    pub fn db_idx64_previous(iterator: i32, primary: *mut u64) -> i32;
+}
+extern "C" {
+    #[doc = "  Find a table row in a secondary 64-bit integer index table by primary key"]
+    #[doc = ""]
+    #[doc = "  @brief Find a table row in a secondary 64-bit integer index table by primary key"]
+    #[doc = "  @param code - The name of the owner of the table"]
+    #[doc = "  @param scope - The scope where the table resides"]
+    #[doc = "  @param table - The table name"]
+    #[doc = "  @param secondary - Pointer to a `uint64_t` variable which will have its value set to the secondary key of the found table row"]
+    #[doc = "  @param primary - The primary key of the table row to look up"]
+    #[doc = "  @post If and only if the table row is found, `*secondary` will be replaced with the secondary key of the found table row"]
+    #[doc = "  @return iterator to the table row with a primary key equal to `id` or the end iterator of the table if the table row could not be found"]
+    pub fn db_idx64_find_primary(
+        code: capi_name,
+        scope: u64,
+        table: capi_name,
+        secondary: *mut u64,
+        primary: u64,
+    ) -> i32;
+}
+extern "C" {
+    #[doc = "  Find a table row in a secondary 64-bit integer index table by secondary key"]
+    #[doc = ""]
+    #[doc = "  @brief Find a table row in a secondary 64-bit integer index table by secondary key"]
+    #[doc = "  @param code - The name of the owner of the table"]
+    #[doc = "  @param scope - The scope where the table resides"]
+    #[doc = "  @param table - The table name"]
+    #[doc = "  @param secondary - Pointer to secondary key used to lookup the table row"]
+    #[doc = "  @param primary - Pointer to a `uint64_t` variable which will have its value set to the primary key of the found table row"]
+    #[doc = "  @post If and only if the table row is found, `*primary` will be replaced with the primary key of the found table row"]
+    #[doc = "  @return iterator to the first table row with a secondary key equal to `*secondary` or the end iterator of the table if the table row could not be found"]
+    pub fn db_idx64_find_secondary(
+        code: capi_name,
+        scope: u64,
+        table: capi_name,
+        secondary: *const u64,
+        primary: *mut u64,
+    ) -> i32;
+}
+extern "C" {
+    #[doc = "  Find the table row in a secondary 64-bit integer index table that matches the lowerbound condition for a given secondary key"]
+    #[doc = "  The table row that matches the lowerbound condition is the first table row in the table with the lowest secondary key that is >= the given key"]
+    #[doc = ""]
+    #[doc = "  @brief Find the table row in a secondary 64-bit integer index table that matches the lowerbound condition for a given secondary key"]
+    #[doc = "  @param code - The name of the owner of the table"]
+    #[doc = "  @param scope - The scope where the table resides"]
+    #[doc = "  @param table - The table name"]
+    #[doc = "  @param secondary - Pointer to secondary key first used to determine the lowerbound and which is then replaced with the secondary key of the found table row"]
+    #[doc = "  @param primary - Pointer to a `uint64_t` variable which will have its value set to the primary key of the found table row"]
+    #[doc = "  @post If and only if the table row is found, `*secondary` will be replaced with the secondary key of the found table row"]
+    #[doc = "  @post If and only if the table row is found, `*primary` will be replaced with the primary key of the found table row"]
+    #[doc = "  @return iterator to the found table row or the end iterator of the table if the table row could not be found"]
+    pub fn db_idx64_lowerbound(
+        code: capi_name,
+        scope: u64,
+        table: capi_name,
+        secondary: *mut u64,
+        primary: *mut u64,
+    ) -> i32;
+}
+extern "C" {
+    #[doc = "  Find the table row in a secondary 64-bit integer index table that matches the upperbound condition for a given secondary key"]
+    #[doc = "  The table row that matches the upperbound condition is the first table row in the table with the lowest secondary key that is > the given key"]
+    #[doc = ""]
+    #[doc = "  @brief Find the table row in a secondary 64-bit integer index table that matches the upperbound condition for a given secondary key"]
+    #[doc = "  @param code - The name of the owner of the table"]
+    #[doc = "  @param scope - The scope where the table resides"]
+    #[doc = "  @param table - The table name"]
+    #[doc = "  @param secondary - Pointer to secondary key first used to determine the upperbound and which is then replaced with the secondary key of the found table row"]
+    #[doc = "  @param primary - Pointer to a `uint64_t` variable which will have its value set to the primary key of the found table row"]
+    #[doc = "  @post If and only if the table row is found, `*secondary` will be replaced with the secondary key of the found table row"]
+    #[doc = "  @post If and only if the table row is found, `*primary` will be replaced with the primary key of the found table row"]
+    #[doc = "  @return iterator to the found table row or the end iterator of the table if the table row could not be found"]
+    pub fn db_idx64_upperbound(
+        code: capi_name,
+        scope: u64,
+        table: capi_name,
+        secondary: *mut u64,
+        primary: *mut u64,
+    ) -> i32;
+}
+extern "C" {
+    #[doc = "  Get an end iterator representing just-past-the-end of the last table row of a secondary 64-bit integer index table"]
+    #[doc = ""]
+    #[doc = "  @brief Get an end iterator representing just-past-the-end of the last table row of a secondary 64-bit integer index table"]
+    #[doc = "  @param code - The name of the owner of the table"]
+    #[doc = "  @param scope - The scope where the table resides"]
+    #[doc = "  @param table - The table name"]
+    #[doc = "  @return end iterator of the table"]
+    pub fn db_idx64_end(code: capi_name, scope: u64, table: capi_name) -> i32;
+}
+extern "C" {
     #[doc = "  Prints string up to given length"]
     #[doc = ""]
     #[doc = "  @param cstr - pointer to string"]
