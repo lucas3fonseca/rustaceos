@@ -39,6 +39,20 @@
           "type": "uint16"
         }
       ]
+    },
+    {
+      "name": "usersage",
+      "base": "",
+      "fields": [
+        {
+          "name": "user",
+          "type": "name"
+        },
+        {
+          "name": "age",
+          "type": "uint16"
+        }
+      ]
     }
   ],
   "actions": [
@@ -59,6 +73,14 @@
       "type": "checkage"
     }
   ],
-  "tables": [],
+  "tables": [
+    {
+      "name": "usersage",
+      "type": "usersage",
+      "index_type": "i64",
+      "key_names": [],
+      "key_types": []
+    }
+  ],
   "ricardian_clauses": []
 }
