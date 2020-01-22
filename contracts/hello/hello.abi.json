@@ -27,7 +27,7 @@
       "fields": []
     },
     {
-      "name": "checkage",
+      "name": "signupage",
       "base": "",
       "fields": [
         {
@@ -69,8 +69,8 @@
       "type": "bye"
     },
     {
-      "name": "checkage",
-      "type": "checkage"
+      "name": "signupage",
+      "type": "signupage"
     }
   ],
   "tables": [
