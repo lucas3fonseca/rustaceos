@@ -4,6 +4,7 @@ members = [
     "eosio_cdt",
     "fill-x",
     "state_history",
+    "dapps/liketree",
 ]
 exclude = [
     "contracts/hello",
