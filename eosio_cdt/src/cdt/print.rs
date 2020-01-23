@@ -19,6 +19,54 @@ impl Print for eos::Name {
     }
 }
 
+impl Print for u8 {
+    fn print(&self) {
+        unsafe { eosio_cdt_bindings::printui(*self as u64) };
+    }
+}
+
+impl Print for u16 {
+    fn print(&self) {
+        unsafe { eosio_cdt_bindings::printui(*self as u64) };
+    }
+}
+
+impl Print for u32 {
+    fn print(&self) {
+        unsafe { eosio_cdt_bindings::printui(*self as u64) };
+    }
+}
+
+impl Print for u64 {
+    fn print(&self) {
+        unsafe { eosio_cdt_bindings::printui(*self) };
+    }
+}
+
+impl Print for i8 {
+    fn print(&self) {
+        unsafe { eosio_cdt_bindings::printi(*self as i64) };
+    }
+}
+
+impl Print for i16 {
+    fn print(&self) {
+        unsafe { eosio_cdt_bindings::printi(*self as i64) };
+    }
+}
+
+impl Print for i32 {
+    fn print(&self) {
+        unsafe { eosio_cdt_bindings::printi(*self as i64) };
+    }
+}
+
+impl Print for i64 {
+    fn print(&self) {
+        unsafe { eosio_cdt_bindings::printi(*self) };
+    }
+}
+
 #[macro_export]
 macro_rules! print {
     ( $( $x:expr ),+ ) => {

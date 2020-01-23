@@ -6,7 +6,7 @@ pub mod eos;
 mod eosio_cdt_bindings;
 
 pub use cdt::*;
-pub use eosio_cdt_macro::action;
+pub use eosio_cdt_macro::{abi, action};
 
 pub type c_char = u8;
 pub use core::ffi::c_void;

@@ -25,6 +25,20 @@
       "name": "bye",
       "base": "",
       "fields": []
+    },
+    {
+      "name": "checkage",
+      "base": "",
+      "fields": [
+        {
+          "name": "name",
+          "type": "name"
+        },
+        {
+          "name": "age",
+          "type": "uint16"
+        }
+      ]
     }
   ],
   "actions": [
@@ -39,6 +53,10 @@
     {
       "name": "bye",
       "type": "bye"
+    },
+    {
+      "name": "checkage",
+      "type": "checkage"
     }
   ],
   "tables": [],
