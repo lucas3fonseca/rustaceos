@@ -2,16 +2,6 @@
   "version": "eosio::abi/1.0",
   "structs": [
     {
-      "name": "hi",
-      "base": "",
-      "fields": [
-        {
-          "name": "name",
-          "type": "name"
-        }
-      ]
-    },
-    {
       "name": "hello",
       "base": "",
       "fields": [
@@ -41,6 +31,30 @@
       ]
     },
     {
+      "name": "updateage",
+      "base": "",
+      "fields": [
+        {
+          "name": "name",
+          "type": "name"
+        },
+        {
+          "name": "age",
+          "type": "uint16"
+        }
+      ]
+    },
+    {
+      "name": "signout",
+      "base": "",
+      "fields": [
+        {
+          "name": "name",
+          "type": "name"
+        }
+      ]
+    },
+    {
       "name": "usersage",
       "base": "",
       "fields": [
@@ -57,10 +71,6 @@
   ],
   "actions": [
     {
-      "name": "hi",
-      "type": "hi"
-    },
-    {
       "name": "hello",
       "type": "hello"
     },
@@ -71,6 +81,14 @@
     {
       "name": "signupage",
       "type": "signupage"
+    },
+    {
+      "name": "updateage",
+      "type": "updateage"
+    },
+    {
+      "name": "signout",
+      "type": "signout"
     }
   ],
   "tables": [
