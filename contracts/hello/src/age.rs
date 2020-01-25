@@ -7,28 +7,24 @@ pub struct UserAge {
     age: u16,
 }
 
-pub struct UserAgeTable<'a> {
-    code: &'a eos::Name,
+pub struct UserAgeTable {
+    code: eos::Name,
     scope: eos::Name,
     name: eos::Name,
     itr: Option<i32>,
-    data: Option<&'a UserAge>,
 }
 
-impl<'a> UserAgeTable<'a> {
-    pub fn new(code: &'a eos::Name, scope: eos::Name) -> Self {
+impl UserAgeTable {
+    pub fn new(code: eos::Name, scope: eos::Name) -> Self {
         UserAgeTable {
             code,
             scope,
             name: eos::name_from_str("usersage"),
             itr: None,
-            data: None,
         }
     }
 
-    fn insert(&self, payer: &eos::Name) {
-        check(self.data.is_some(), "the data of the table row is empty");
-        let data = &self.data.unwrap();
+    pub fn insert(&self, payer: &eos::Name, data: &UserAge) {
         eosio_cdt::table_insert(&self.scope, &self.name, payer, data.user.value, data);
     }
 
@@ -48,15 +44,21 @@ impl<'a> UserAgeTable<'a> {
         eosio_cdt::table_get(itr)
     }
 
-    pub fn remove(&mut self) {
-        let itr = self.itr.expect("invalid iterator");
-        eosio_cdt::table_remove(itr);
+    pub fn update(&mut self, payer: &eos::Name, data: &UserAge) {
+        let itr = eosio_cdt::expect(self.itr, "iterator is not valid to update");
+        eosio_cdt::table_update(payer, itr, data);
     }
 
-    pub fn update(&mut self, payer: &eos::Name) {
-        check(self.data.is_some(), "the data of the table row is empty");
-        check(self.itr.is_some(), "the table iterator is invalid");
-        eosio_cdt::table_update(payer, self.itr.unwrap(), self.data.unwrap());
+    pub fn delete(&mut self, id: u64) {
+        let itr = self.find(id);
+        check(itr != self.end(), "invalid record to delete");
+        self.erase();
+    }
+
+    pub fn erase(&mut self) {
+        let itr = eosio_cdt::expect(self.itr, "iterator is not valid to delete");
+        eosio_cdt::table_remove(itr);
+        self.itr = Some(itr + 1);
     }
 }
 
@@ -65,15 +67,14 @@ pub fn signupage(name: eos::Name, age: u16) {
     require_auth(contract.get_self());
     check_age(age);
 
-    let mut user_age_table = UserAgeTable::new(contract.get_self(), eos::Name::new(0));
+    let mut user_age_table = UserAgeTable::new(contract.get_self().clone(), eos::Name::new(0));
     check(
         user_age_table.find(name.value) == user_age_table.end(),
         "user already is already signed up",
     );
 
     let user_age = UserAge { user: name, age };
-    user_age_table.data = Some(&user_age);
-    user_age_table.insert(contract.get_self());
+    user_age_table.insert(contract.get_self(), &user_age);
 
     accepted_message(user_age.user, age);
 }
@@ -83,11 +84,10 @@ pub fn updateage(name: eos::Name, age: u16) {
     require_auth(contract.get_self());
     check_age(age);
 
-    let mut user_age_table = UserAgeTable::new(contract.get_self(), eos::Name::new(0));
+    let mut user_age_table = UserAgeTable::new(contract.get_self().clone(), eos::Name::new(0));
     let mut user_age = user_age_table.get(name.value);
     user_age.age = age;
-    user_age_table.data = Some(&user_age);
-    user_age_table.update(contract.get_self());
+    user_age_table.update(contract.get_self(), &user_age);
 
     accepted_message(name, age);
 }
@@ -96,9 +96,8 @@ pub fn updateage(name: eos::Name, age: u16) {
 pub fn signout(name: eos::Name) {
     require_auth(contract.get_self());
 
-    let mut user_age_table = UserAgeTable::new(contract.get_self(), eos::Name::new(0));
-    user_age_table.find(name.value);
-    user_age_table.remove();
+    let mut user_age_table = UserAgeTable::new(contract.get_self().clone(), eos::Name::new(0));
+    user_age_table.delete(name.value);
     print!("user ", name, " was removed successfully");
 }
 

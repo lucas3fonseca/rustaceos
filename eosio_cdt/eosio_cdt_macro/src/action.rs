@@ -45,6 +45,5 @@ pub fn action(_args: TokenStream, input: TokenStream) -> TokenStream {
         }
     };
 
-    eprintln!("\n>>> EOS Generated Action: \n{}", output);
     output.into()
 }
