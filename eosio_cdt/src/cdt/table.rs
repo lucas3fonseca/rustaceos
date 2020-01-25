@@ -12,6 +12,21 @@ pub fn table_find(code: &eos::Name, scope: &eos::Name, table: &eos::Name, id: u6
     unsafe { eosio_cdt_bindings::db_find_i64(code.value, scope.value, table.value, id) }
 }
 
+pub fn table_next_i64(itr: i32) -> (i32, u64) {
+    let mut id: u64 = 0;
+    let pk: *mut u64 = &mut id;
+    let next_itr = unsafe { eosio_cdt_bindings::db_next_i64(itr, pk) };
+    (next_itr, id)
+}
+
+pub fn table_lower_bound(code: &eos::Name, scope: &eos::Name, table: &eos::Name, id: u64) -> i32 {
+    unsafe { eosio_cdt_bindings::db_lowerbound_i64(code.value, scope.value, table.value, id) }
+}
+
+pub fn table_end(code: &eos::Name, scope: &eos::Name, table: &eos::Name) -> i32 {
+    unsafe { eosio_cdt_bindings::db_end_i64(code.value, scope.value, table.value) }
+}
+
 pub fn table_get<T: DeserializeOwned>(itr: i32) -> T {
     let buffer: *mut c_void = null_mut();
     let byte_size = unsafe { eosio_cdt_bindings::db_get_i64(itr, buffer, 0) } as u32;
@@ -23,10 +38,6 @@ pub fn table_get<T: DeserializeOwned>(itr: i32) -> T {
         eosio_cdt_bindings::db_get_i64(itr, buffer, byte_size);
     }
     bincode::deserialize(&bytes[..]).expect("fail to decode table data")
-}
-
-pub fn table_end(code: &eos::Name, scope: &eos::Name, table: &eos::Name) -> i32 {
-    unsafe { eosio_cdt_bindings::db_end_i64(code.value, scope.value, table.value) }
 }
 
 pub fn table_insert<T: ?Sized>(

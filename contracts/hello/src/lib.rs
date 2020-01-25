@@ -5,7 +5,7 @@ use eosio_cdt::{print, require_auth};
 mod age;
 use age::*;
 
-eosio_cdt::abi!(hello, signupage, updateage, signout);
+eosio_cdt::abi!(hello, signupage, updateage, signout, advanceages);
 
 #[eosio_cdt::action]
 pub fn hello(owner: eos::Name) {

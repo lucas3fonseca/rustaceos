@@ -17,6 +17,11 @@
       "fields": []
     },
     {
+      "name": "advanceages",
+      "base": "",
+      "fields": []
+    },
+    {
       "name": "signupage",
       "base": "",
       "fields": [
@@ -77,6 +82,10 @@
     {
       "name": "bye",
       "type": "bye"
+    },
+    {
+      "name": "advanceages",
+      "type": "advanceages"
     },
     {
       "name": "signupage",
