@@ -1,11 +1,11 @@
-use serde::Serialize;
 use core::ptr::null_mut;
+use serde::Serialize;
 
 use serde::de::DeserializeOwned;
 
 use crate::c_void;
-use crate::eos;
 use crate::check;
+use crate::eos;
 use crate::eosio_cdt_bindings;
 
 pub fn table_find(code: &eos::Name, scope: &eos::Name, table: &eos::Name, id: u64) -> i32 {
@@ -19,13 +19,10 @@ pub fn table_get<T: DeserializeOwned>(itr: i32) -> T {
     let mut bytes: Vec<u8> = vec![0; byte_size as usize];
     let buffer = bytes.as_mut_ptr().cast();
 
-    unsafe { eosio_cdt_bindings::db_get_i64(itr, buffer, byte_size); }
+    unsafe {
+        eosio_cdt_bindings::db_get_i64(itr, buffer, byte_size);
+    }
     bincode::deserialize(&bytes[..]).expect("fail to decode table data")
-}
-
-pub fn table_remove(itr: i32) {
-    check(itr >= 0, "invalid iterator to remove");
-    unsafe { eosio_cdt_bindings::db_remove_i64(itr) };
 }
 
 pub fn table_end(code: &eos::Name, scope: &eos::Name, table: &eos::Name) -> i32 {
@@ -63,11 +60,7 @@ where
     itr
 }
 
-pub fn table_update<T: ?Sized>(
-    payer: &eos::Name,
-    iterator: i32,
-    data: &T,
-)
+pub fn table_update<T: ?Sized>(payer: &eos::Name, iterator: i32, data: &T)
 where
     T: Serialize,
 {
@@ -75,7 +68,15 @@ where
     let byte_size = bytes.len() as u32;
     let buffer = bytes.as_mut_ptr().cast();
 
-    unsafe { eosio_cdt_bindings::db_update_i64(iterator, payer.value, buffer, byte_size); }
+    unsafe {
+        eosio_cdt_bindings::db_update_i64(iterator, payer.value, buffer, byte_size);
+    }
 
     // TODO: insert secondary keys
+}
+
+pub fn table_remove(itr: i32) {
+    check(itr >= 0, "invalid iterator to remove");
+    unsafe { eosio_cdt_bindings::db_remove_i64(itr) };
+    // TODO: remove secondary keys too
 }

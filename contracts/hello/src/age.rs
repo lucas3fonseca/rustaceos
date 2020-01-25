@@ -70,7 +70,7 @@ pub fn signupage(name: eos::Name, age: u16) {
     let mut user_age_table = UserAgeTable::new(contract.get_self().clone(), eos::Name::new(0));
     check(
         user_age_table.find(name.value) == user_age_table.end(),
-        "user already is already signed up",
+        "user is already signed up",
     );
 
     let user_age = UserAge { user: name, age };

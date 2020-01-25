@@ -1,8 +1,8 @@
 extern crate proc_macro;
 
-mod eos_formats;
 mod action;
 mod dispatcher;
+mod eos_formats;
 
 use proc_macro::TokenStream;
 
