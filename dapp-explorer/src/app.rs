@@ -1,11 +1,11 @@
 use yew::{html, Callback, ClickEvent, Component, ComponentLink, Html, ShouldRender};
 
-struct App {
+pub struct App {
     clicked: bool,
     onclick: Callback<ClickEvent>,
 }
 
-enum Msg {
+pub enum Msg {
     Click,
 }
 
@@ -30,18 +30,10 @@ impl Component for App {
     }
 
     fn view(&self) -> Html {
-        let button_text = if self.clicked {
-            "Clicked!!!"
-        } else {
-            "Click me!!!"
-        };
+        let button_text = if self.clicked { "Clicked" } else { "Click me" };
 
         html! {
             <button onclick=&self.onclick>{ button_text }</button>
         }
     }
-}
-
-fn main() {
-    yew::start_app::<App>();
 }
