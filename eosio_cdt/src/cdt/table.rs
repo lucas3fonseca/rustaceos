@@ -7,6 +7,106 @@ use crate::c_void;
 use crate::check;
 use crate::eos;
 use crate::eosio_cdt_bindings;
+use crate::expect;
+
+pub struct TableIterator {
+    code: eos::Name,
+    scope: eos::Name,
+    name: eos::Name,
+    itr: Option<i32>,
+}
+
+pub trait Table {
+    fn new(code: eos::Name, scope: eos::Name) -> TableIterator;
+    fn pk(&self) -> u64;
+}
+
+impl TableIterator {
+    pub fn new(code: eos::Name, scope: eos::Name, name: eos::Name) -> TableIterator {
+        TableIterator {
+            code,
+            scope,
+            name,
+            itr: None,
+        }
+    }
+
+    pub fn insert<T>(&self, payer: &eos::Name, data: &T)
+    where
+        T: Serialize + Table,
+    {
+        table_insert(&self.scope, &self.name, payer, data.pk(), data);
+    }
+
+    pub fn find(&mut self, id: u64) -> i32 {
+        let itr = table_find(&self.code, &self.scope, &self.name, id);
+        self.itr = Some(itr);
+        itr
+    }
+
+    pub fn begin(&mut self) -> Option<i32> {
+        let itr = table_lower_bound(&self.code, &self.scope, &self.name, 0);
+        if itr != self.end() {
+            self.itr = Some(itr);
+            Some(itr)
+        } else {
+            None
+        }
+    }
+
+    pub fn end(&self) -> i32 {
+        table_end(&self.code, &self.scope, &self.name)
+    }
+
+    pub fn read<T: DeserializeOwned>(&self) -> T {
+        let itr = expect(self.itr, "invalid record");
+        table_get(itr)
+    }
+
+    pub fn erase(&mut self) {
+        let itr = expect(self.itr, "iterator is not valid to delete");
+        table_remove(itr);
+    }
+
+    pub fn get<T: DeserializeOwned>(&mut self, id: u64) -> T {
+        let itr = self.find(id);
+        check(itr != self.end(), "invalid record");
+        table_get(itr)
+    }
+
+    pub fn update<T: Serialize>(&self, payer: &eos::Name, data: &T) {
+        let itr = expect(self.itr, "iterator is not valid to update");
+        table_update(payer, itr, data);
+    }
+
+    pub fn delete(&mut self, id: u64) {
+        let itr = self.find(id);
+        check(itr != self.end(), "invalid record to delete");
+        self.erase();
+    }
+}
+
+impl Iterator for TableIterator {
+    type Item = TableIterator;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let itr = expect(self.itr, "cannot advance empty iterator");
+        let next_itr = table_next_i64(itr).0;
+        if itr >= 0 {
+            self.itr = Some(next_itr);
+            let item = TableIterator {
+                code: self.code,
+                scope: self.scope,
+                name: self.name,
+                itr: Some(itr),
+            };
+            Some(item)
+        } else {
+            self.itr = None;
+            None
+        }
+    }
+}
 
 pub fn table_find(code: &eos::Name, scope: &eos::Name, table: &eos::Name, id: u64) -> i32 {
     unsafe { eosio_cdt_bindings::db_find_i64(code.value, scope.value, table.value, id) }
