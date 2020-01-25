@@ -34,19 +34,21 @@ impl UserAgeTable {
         itr
     }
 
-    pub fn begin(&mut self) -> i32 {
+    pub fn begin(&mut self) -> Option<i32> {
         let itr = eosio_cdt::table_lower_bound(&self.code, &self.scope, &self.name, 0);
         if itr != self.end() {
             self.itr = Some(itr);
+            Some(itr)
+        } else {
+            None
         }
-        itr
     }
 
     pub fn end(&self) -> i32 {
         eosio_cdt::table_end(&self.code, &self.scope, &self.name)
     }
 
-    pub fn read(&mut self) -> UserAge {
+    pub fn read(&self) -> UserAge {
         let itr = eosio_cdt::expect(self.itr, "invalid record");
         eosio_cdt::table_get(itr)
     }
@@ -57,7 +59,7 @@ impl UserAgeTable {
         eosio_cdt::table_get(itr)
     }
 
-    pub fn update(&mut self, payer: &eos::Name, data: &UserAge) {
+    pub fn update(&self, payer: &eos::Name, data: &UserAge) {
         let itr = eosio_cdt::expect(self.itr, "iterator is not valid to update");
         eosio_cdt::table_update(payer, itr, data);
     }
@@ -80,15 +82,18 @@ impl Iterator for UserAgeTable {
     fn next(&mut self) -> Option<Self::Item> {
         let itr = eosio_cdt::expect(self.itr, "cannot advance empty iterator");
         let next_itr = eosio_cdt::table_next_i64(itr).0;
-        if next_itr >= 0 {
-            let next_item = UserAgeTable {
+        print!(" >>> itr ", itr, " - next: ", next_itr);
+        if itr >= 0 {
+            self.itr = Some(next_itr);
+            let item = UserAgeTable {
                 code: self.code,
                 scope: self.scope,
                 name: self.name,
-                itr: Some(next_itr),
+                itr: Some(itr),
             };
-            Some(next_item)
+            Some(item)
         } else {
+            self.itr = None;
             None
         }
     }
@@ -138,13 +143,17 @@ pub fn advanceages() {
     require_auth(contract.get_self());
 
     let mut user_age_table = UserAgeTable::new(contract.get_self().clone(), eos::Name::new(0));
-    user_age_table.begin();
-    user_age_table.take(3).for_each(|mut itr| {
-        let mut item = itr.read();
-        item.age += 1;
-        itr.update(contract.get_self(), &item);
-        print!(" >>> ", item.user, " now is ", item.age);
-    });
+    match user_age_table.begin() {
+        Some(_) => {
+            user_age_table.for_each(|itr| {
+                let mut item = itr.read();
+                item.age += 1;
+                itr.update(contract.get_self(), &item);
+                print!(" >>> ", item.user, " now is ", item.age);
+            });
+        }
+        None => print!(" >>> No users are signed up"),
+    }
 }
 
 fn check_age(age: u16) {
