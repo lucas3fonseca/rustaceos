@@ -1,5 +1,5 @@
 use eosio_cdt::eos;
-use eosio_cdt::{check, print, require_auth, Table, TableIterator};
+use eosio_cdt::{check, expect, print, require_auth, Table, TableIterator};
 
 #[derive(eos::Serialize, eos::Deserialize)]
 pub struct UserAge {
@@ -8,7 +8,7 @@ pub struct UserAge {
 }
 
 impl Table for UserAge {
-    fn new(code: eos::Name, scope: eos::Name) -> TableIterator {
+    fn new(code: eos::Name, scope: eos::Name) -> TableIterator<UserAge> {
         TableIterator::new(code, scope, eos::name_from_str("usersage"))
     }
 
@@ -40,7 +40,7 @@ pub fn updateage(name: eos::Name, age: u16) {
     check_age(age);
 
     let mut user_age_table = UserAge::new(contract.get_self().clone(), eos::Name::new(0));
-    let mut user_age: UserAge = user_age_table.get(name.value);
+    let mut user_age = user_age_table.get(name.value);
     user_age.age = age;
     user_age_table.update(&contract.get_self(), &user_age);
 
@@ -61,17 +61,14 @@ pub fn advanceages() {
     require_auth(&contract.get_self());
 
     let mut user_age_table = UserAge::new(contract.get_self(), eos::Name::new(0));
-    match user_age_table.begin() {
-        Some(_) => {
-            user_age_table.for_each(|itr| {
-                let mut item: UserAge = itr.read();
-                item.age += 1;
-                itr.update(&contract.get_self(), &item);
-                print!(" >>> ", item.user, " now is ", item.age);
-            });
-        }
-        None => print!(" >>> No users are signed up"),
-    }
+    expect(user_age_table.begin(), "no users are signed up");
+
+    user_age_table.for_each(|itr| {
+        let mut item = itr.read();
+        item.age += 1;
+        itr.update(&contract.get_self(), &item);
+        print!(" >>> ", item.user, " now is ", item.age);
+    });
 }
 
 fn check_age(age: u16) {

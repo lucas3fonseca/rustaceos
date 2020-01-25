@@ -1,7 +1,7 @@
 use core::ptr::null_mut;
-use serde::Serialize;
-
 use serde::de::DeserializeOwned;
+use serde::Serialize;
+use std::marker;
 
 use crate::c_void;
 use crate::check;
@@ -9,29 +9,31 @@ use crate::eos;
 use crate::eosio_cdt_bindings;
 use crate::expect;
 
-pub struct TableIterator {
+pub trait Table: Serialize + DeserializeOwned {
+    fn new(code: eos::Name, scope: eos::Name) -> TableIterator<Self>;
+    fn pk(&self) -> u64;
+}
+
+pub struct TableIterator<T: Table> {
     code: eos::Name,
     scope: eos::Name,
     name: eos::Name,
     itr: Option<i32>,
+    _marker: marker::PhantomData<T>,
 }
 
-pub trait Table {
-    fn new(code: eos::Name, scope: eos::Name) -> TableIterator;
-    fn pk(&self) -> u64;
-}
-
-impl TableIterator {
-    pub fn new(code: eos::Name, scope: eos::Name, name: eos::Name) -> TableIterator {
+impl<T: Table> TableIterator<T> {
+    pub fn new(code: eos::Name, scope: eos::Name, name: eos::Name) -> TableIterator<T> {
         TableIterator {
             code,
             scope,
             name,
             itr: None,
+            _marker: marker::PhantomData,
         }
     }
 
-    pub fn insert<T>(&self, payer: &eos::Name, data: &T)
+    pub fn insert(&self, payer: &eos::Name, data: &T)
     where
         T: Serialize + Table,
     {
@@ -58,7 +60,7 @@ impl TableIterator {
         table_end(&self.code, &self.scope, &self.name)
     }
 
-    pub fn read<T: DeserializeOwned>(&self) -> T {
+    pub fn read(&self) -> T {
         let itr = expect(self.itr, "invalid record");
         table_get(itr)
     }
@@ -68,13 +70,13 @@ impl TableIterator {
         table_remove(itr);
     }
 
-    pub fn get<T: DeserializeOwned>(&mut self, id: u64) -> T {
+    pub fn get(&mut self, id: u64) -> T {
         let itr = self.find(id);
         check(itr != self.end(), "invalid record");
         table_get(itr)
     }
 
-    pub fn update<T: Serialize>(&self, payer: &eos::Name, data: &T) {
+    pub fn update(&self, payer: &eos::Name, data: &T) {
         let itr = expect(self.itr, "iterator is not valid to update");
         table_update(payer, itr, data);
     }
@@ -86,8 +88,11 @@ impl TableIterator {
     }
 }
 
-impl Iterator for TableIterator {
-    type Item = TableIterator;
+impl<T> Iterator for TableIterator<T>
+where
+    T: Table,
+{
+    type Item = TableIterator<T>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let itr = expect(self.itr, "cannot advance empty iterator");
@@ -99,6 +104,7 @@ impl Iterator for TableIterator {
                 scope: self.scope,
                 name: self.name,
                 itr: Some(itr),
+                _marker: marker::PhantomData,
             };
             Some(item)
         } else {
