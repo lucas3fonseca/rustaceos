@@ -4,7 +4,7 @@ pub struct ChainStatus {
     pub connection: ConnectionStatus,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 pub enum ConnectionStatus {
     Online,
     Offline,

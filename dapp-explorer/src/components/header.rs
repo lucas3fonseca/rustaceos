@@ -3,12 +3,14 @@ use yew::agent::Bridged;
 use yew::worker::Bridge;
 use yew::{html, Component, ComponentLink, Html, Properties, ShouldRender};
 
-use crate::chain::{ChainStatus, ConnectionStatus};
-use crate::ship::{Response as ShipResponse, ShipWorker};
+use crate::chain::ChainStatus;
+use crate::ship::{ConnectionStatus, Request as ShipRequest, Response as ShipResponse, ShipWorker};
 
 pub struct Header {
     props: Props,
+    link: ComponentLink<Self>,
     ship: Box<Bridge<ShipWorker>>,
+    connection: ConnectionStatus,
 }
 
 #[derive(Properties, Clone)]
@@ -18,6 +20,7 @@ pub struct Props {
 
 pub enum Msg {
     ShipMsg(ShipResponse),
+    ConnectShip,
 }
 
 impl Component for Header {
@@ -25,16 +28,24 @@ impl Component for Header {
     type Properties = Props;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let callback = link.callback(|message| Msg::ShipMsg(message));
-        let ship = ShipWorker::bridge(callback);
-        Header { props, ship }
+        let ship_callback = link.callback(|message| Msg::ShipMsg(message));
+        let mut ship = ShipWorker::bridge(ship_callback);
+        ship.send(ShipRequest::Subscribe);
+        Header {
+            props,
+            ship,
+            link,
+            connection: ConnectionStatus::Offline,
+        }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
             Msg::ShipMsg(ship_response) => match ship_response {
-                ShipResponse::Answer(val) => info!("ship msg >> {}", val),
+                ShipResponse::Connected => self.connection = ConnectionStatus::Online,
+                ShipResponse::Disconnected => self.connection = ConnectionStatus::Offline,
             },
+            Msg::ConnectShip => self.ship.send(ShipRequest::Connect),
         }
         true
     }
@@ -76,15 +87,29 @@ impl Component for Header {
 
 impl Header {
     fn display_chain_status(&self) -> Html {
-        let (text, color) = match self.props.chain.connection {
+        let (text, color) = match self.connection {
             ConnectionStatus::Online => ("Online", "has-text-success"),
             ConnectionStatus::Offline => ("Offline", "has-text-danger"),
         };
 
+        let button = if self.connection == ConnectionStatus::Offline {
+            let onclick = self.link.callback(|_| Msg::ConnectShip);
+            html! {
+                <div class="navbar-item">
+                    <button class="button is-small" onclick=onclick>{"Connect"}</button>
+                </div>
+            }
+        } else {
+            html! {}
+        };
+
         html! {
-            <div class=("navbar-item", color)>
-                {text}
-            </div>
+            <>
+                <div class=("navbar-item", color)>
+                    {text}
+                </div>
+                {button}
+            </>
         }
     }
 }
