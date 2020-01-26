@@ -58,14 +58,14 @@ impl Component for Test {
 
 impl Test {
     fn action_button(&self, msg: Msg) -> Html {
-        let (text, color, click_action) = match msg {
-            Msg::Increment => ("Increment", "is-info", Msg::Increment),
-            Msg::Decrement => ("Decrement", "is-danger", Msg::Decrement),
-            Msg::Bulk(v) => ("Bulk", "is-success", Msg::Bulk(v)),
+        let (text, color) = match msg {
+            Msg::Increment => ("Increment", "is-info"),
+            Msg::Decrement => ("Decrement", "is-danger"),
+            Msg::Bulk(_) => ("Bulk", "is-success"),
         };
 
         html! {
-            <button class=("button", color) onclick=self.link.callback(move |_| click_action.clone())>
+            <button class=("button", color) onclick=self.link.callback(move |_| msg.clone())>
                 {text}
             </button>
         }
