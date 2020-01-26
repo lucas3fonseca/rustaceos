@@ -1,6 +1,10 @@
 use yew::{html, Callback, ClickEvent, Component, ComponentLink, Html, ShouldRender};
 
+use crate::chain::ChainStatus;
+use crate::components::Header;
+
 pub struct App {
+    chain: ChainStatus,
     clicked: bool,
     onclick: Callback<ClickEvent>,
 }
@@ -15,6 +19,7 @@ impl Component for App {
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
         App {
+            chain: ChainStatus::default(),
             clicked: false,
             onclick: link.callback(|_| Msg::Click),
         }
@@ -33,7 +38,14 @@ impl Component for App {
         let button_text = if self.clicked { "Clicked" } else { "Click me" };
 
         html! {
-            <button onclick=&self.onclick>{ button_text }</button>
+            <>
+                <Header chain=&self.chain />
+                <section class="section">
+                    <div class="container">
+                        <button class="button" onclick=&self.onclick>{ button_text }</button>
+                    </div>
+                </section>
+            </>
         }
     }
 }
