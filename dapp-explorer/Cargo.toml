@@ -15,7 +15,8 @@ wasm-bindgen = "0.2.58"
 chrono = { version = "0.4.10", features = ["serde", "wasmbind", "js-sys"] }
 log = "0.4"
 web_logger = "0.2"
-yew = "0.11.0"
+# yew = "0.11.0" >> watch https://github.com/yewstack/yew/issues/558
+yew = { git = "https://github.com/yewstack/yew", branch = "web-sys", features = ["services", "web_sys"] }
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
@@ -27,6 +28,12 @@ console_error_panic_hook = { version = "0.1.6", optional = true }
 # compared to the default allocator's ~10K. It is slower than the default
 # allocator, however.
 wee_alloc = { version = "0.4.4", optional = true }
+
+# The `web-sys` crate allows you to interact with the various browser APIs,
+# like the DOM.
+[dependencies.web-sys]
+version = "0.3.22"
+features = ["console"]
 
 [dev-dependencies]
 wasm-bindgen-test = "0.2"

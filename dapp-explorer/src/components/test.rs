@@ -50,7 +50,7 @@ impl Component for Test {
                 { self.action_button(Msg::Decrement) }
                 { self.action_button(Msg::Bulk(vec![Msg::Increment, Msg::Increment])) }
                 <p>{ self.counter }</p>
-                <p>{ Local::now().to_rfc2822() }</p>
+                <p>{ Local::now() }</p>
             </>
         }
     }
