@@ -1,9 +1,14 @@
+use log::info;
+use yew::agent::Bridged;
+use yew::worker::Bridge;
 use yew::{html, Component, ComponentLink, Html, Properties, ShouldRender};
 
 use crate::chain::{ChainStatus, ConnectionStatus};
+use crate::ship::{Response as ShipResponse, ShipWorker};
 
 pub struct Header {
     props: Props,
+    ship: Box<Bridge<ShipWorker>>,
 }
 
 #[derive(Properties, Clone)]
@@ -11,17 +16,26 @@ pub struct Props {
     pub chain: ChainStatus,
 }
 
-pub enum Msg {}
+pub enum Msg {
+    ShipMsg(ShipResponse),
+}
 
 impl Component for Header {
     type Message = Msg;
     type Properties = Props;
 
-    fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Header { props }
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        let callback = link.callback(|message| Msg::ShipMsg(message));
+        let ship = ShipWorker::bridge(callback);
+        Header { props, ship }
     }
 
-    fn update(&mut self, _msg: Self::Message) -> ShouldRender {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+        match msg {
+            Msg::ShipMsg(ship_response) => match ship_response {
+                ShipResponse::Answer(val) => info!("ship msg >> {}", val),
+            },
+        }
         true
     }
 

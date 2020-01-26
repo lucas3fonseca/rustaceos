@@ -3,6 +3,7 @@
 mod app;
 mod chain;
 mod components;
+mod ship;
 mod utils;
 
 use wasm_bindgen::prelude::*;
