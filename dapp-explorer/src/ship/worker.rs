@@ -1,8 +1,11 @@
-use log::{error, info};
+use anyhow::Error;
+use log::{error, info, warn};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{ErrorEvent, MessageEvent, WebSocket};
+use yew::format::{Binary, Format, Json};
+use yew::services::websocket::{WebSocketService, WebSocketStatus, WebSocketTask};
 use yew::worker::*;
 
 use eosio_cdt::eos::{eos_deserialize, eos_serialize};
@@ -40,16 +43,24 @@ pub enum Response {
     Disconnected,
 }
 
+#[derive(Deserialize, Debug)]
+pub struct ResponseType {
+    data: String,
+}
+
 pub enum Msg {
     SetConnected,
     SetDisconnected,
     SetHeadLib(u32, u32),
     SetBlock(u32),
+    WsResponse(Result<ResponseType, Error>),
 }
 
 pub struct ShipWorker {
     link: AgentLink<ShipWorker>,
     subscribers: Vec<HandlerId>,
+    ws_service: WebSocketService,
+    ws: Option<WebSocketTask>,
     data: Ship,
 }
 
@@ -62,6 +73,8 @@ impl Agent for ShipWorker {
     fn create(link: AgentLink<Self>) -> Self {
         ShipWorker {
             link,
+            ws_service: WebSocketService::new(),
+            ws: None,
             subscribers: vec![],
             data: Ship {
                 block_num: 0,
@@ -87,6 +100,9 @@ impl Agent for ShipWorker {
                 self.data.lib = lib;
             }
             Msg::SetBlock(block_num) => self.data.block_num = block_num,
+            Msg::WsResponse(data) => {
+                info!("got some ws response {:?}", data);
+            }
         }
     }
 
@@ -107,41 +123,28 @@ impl ShipWorker {
     }
 
     fn connect(&mut self) {
-        info!("todo: implement websocket connection");
-        let ws = WebSocket::new(ADDRESS).expect("fail to instantiate websocket");
+        if self.ws.is_some() {
+            warn!("ship websocket connection is in progress...");
+            return;
+        }
 
-        // create callback
-        let onmessage_callback = Closure::wrap(Box::new(move |e: MessageEvent| {
-            // handle message
-            let response = e
-                .data()
-                .as_string()
-                .expect("Can't convert received data to a string");
-            info!("message event, received data: {:?}", response);
-        }) as Box<dyn FnMut(MessageEvent)>);
-        // set message event handler on WebSocket
-        ws.set_onmessage(Some(onmessage_callback.as_ref().unchecked_ref()));
-        // forget the callback to keep it alive
-        onmessage_callback.forget();
+        let callback = self.link.callback(|Json(data)| {
+            // let response = match data {
+            //     Ok(data) => Ok(ResponseType::Text(data)),
+            //     // Ok(Binary(data)) => Ok(ResponseType::Binary(data)),
+            //     Err(e) => Err(e),
+            // };
+            Msg::WsResponse(data)
+        });
+        let notification = self.link.callback(|status| match status {
+            WebSocketStatus::Opened => Msg::SetConnected,
+            WebSocketStatus::Closed | WebSocketStatus::Error => Msg::SetDisconnected,
+        });
 
-        let onerror_callback = Closure::wrap(Box::new(move |e: ErrorEvent| {
-            error!("error event: {:?}", e);
-            // self.update(Msg::SetDisconnected);
-        }) as Box<dyn FnMut(ErrorEvent)>);
-        ws.set_onerror(Some(onerror_callback.as_ref().unchecked_ref()));
-        onerror_callback.forget();
-
-        let cloned_ws = ws.clone();
-        let onopen_callback = Closure::wrap(Box::new(move |_| {
-            info!("socket opened");
-            // self.update(Msg::SetConnected);
-
-            match cloned_ws.send_with_str("ping") {
-                Ok(_) => info!("message successfully sent"),
-                Err(err) => error!("error sending message: {:?}", err),
-            }
-        }) as Box<dyn FnMut(JsValue)>);
-        ws.set_onopen(Some(onopen_callback.as_ref().unchecked_ref()));
-        onopen_callback.forget();
+        let task = self
+            .ws_service
+            .connect(ADDRESS, callback, notification)
+            .expect("fail to instantiate websocket");
+        self.ws = Some(task);
     }
 }
