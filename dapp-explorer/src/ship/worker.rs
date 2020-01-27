@@ -1,11 +1,13 @@
 use anyhow::Error;
 use log::{error, info, warn};
 use serde::{Deserialize, Serialize};
+use std::result::Result;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{ErrorEvent, MessageEvent, WebSocket};
-use yew::format::{Binary, Format, Json};
+use yew::format::{Binary, Format, Json, Text};
 use yew::services::websocket::{WebSocketService, WebSocketStatus, WebSocketTask};
+use yew::services::Task;
 use yew::worker::*;
 
 use eosio_cdt::eos::{eos_deserialize, eos_serialize};
@@ -43,9 +45,29 @@ pub enum Response {
     Disconnected,
 }
 
-#[derive(Deserialize, Debug)]
-pub struct ResponseType {
-    data: String,
+#[derive(Debug)]
+pub enum ResponseType {
+    Text(String),
+    Binary(Vec<u8>),
+    Error,
+}
+
+impl From<Result<String, Error>> for ResponseType {
+    fn from(data: Result<String, Error>) -> Self {
+        match data {
+            Ok(data) => ResponseType::Text(data),
+            Err(e) => ResponseType::Error,
+        }
+    }
+}
+
+impl From<Result<Vec<u8>, Error>> for ResponseType {
+    fn from(data: Result<Vec<u8>, Error>) -> Self {
+        match data {
+            Ok(data) => ResponseType::Binary(data),
+            Err(e) => ResponseType::Error,
+        }
+    }
 }
 
 pub enum Msg {
@@ -53,7 +75,7 @@ pub enum Msg {
     SetDisconnected,
     SetHeadLib(u32, u32),
     SetBlock(u32),
-    WsResponse(Result<ResponseType, Error>),
+    WsResponse(ResponseType), //Result<ResponseType, Error>),
 }
 
 pub struct ShipWorker {
@@ -93,6 +115,7 @@ impl Agent for ShipWorker {
             }
             Msg::SetDisconnected => {
                 self.data.status = ConnectionStatus::Offline;
+                self.ws = None;
                 self.notify_subscribers(Response::Disconnected);
             }
             Msg::SetHeadLib(head_block, lib) => {
@@ -100,9 +123,13 @@ impl Agent for ShipWorker {
                 self.data.lib = lib;
             }
             Msg::SetBlock(block_num) => self.data.block_num = block_num,
-            Msg::WsResponse(data) => {
-                info!("got some ws response {:?}", data);
-            }
+            Msg::WsResponse(data) => match data {
+                ResponseType::Error => {
+                    error!("ship ws got error, disconnecting...");
+                    self.disconnect()
+                }
+                _ => info!("got some ws response {:?}", data),
+            },
         }
     }
 
@@ -128,14 +155,9 @@ impl ShipWorker {
             return;
         }
 
-        let callback = self.link.callback(|Json(data)| {
-            // let response = match data {
-            //     Ok(data) => Ok(ResponseType::Text(data)),
-            //     // Ok(Binary(data)) => Ok(ResponseType::Binary(data)),
-            //     Err(e) => Err(e),
-            // };
-            Msg::WsResponse(data)
-        });
+        let callback = self
+            .link
+            .callback(|data: ResponseType| Msg::WsResponse(data));
         let notification = self.link.callback(|status| match status {
             WebSocketStatus::Opened => Msg::SetConnected,
             WebSocketStatus::Closed | WebSocketStatus::Error => Msg::SetDisconnected,
@@ -146,5 +168,13 @@ impl ShipWorker {
             .connect(ADDRESS, callback, notification)
             .expect("fail to instantiate websocket");
         self.ws = Some(task);
+    }
+
+    fn disconnect(&mut self) {
+        if self.ws.is_none() {
+            warn!("ship websocket is already off...");
+        } else {
+            self.ws.take().unwrap().cancel();
+        }
     }
 }
