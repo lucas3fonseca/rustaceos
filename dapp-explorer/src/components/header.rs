@@ -1,21 +1,14 @@
 use yew::agent::Bridged;
 use yew::worker::Bridge;
-use yew::{html, Component, ComponentLink, Html, Properties, ShouldRender};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
-use crate::chain::ChainStatus;
 use crate::ship::{ConnectionStatus, Request as ShipRequest, Response as ShipResponse, ShipWorker};
 
 pub struct Header {
-    props: Props,
     link: ComponentLink<Self>,
     ship: Box<dyn Bridge<ShipWorker>>,
     connection: ConnectionStatus,
     block_num: u32,
-}
-
-#[derive(Properties, Clone)]
-pub struct Props {
-    pub chain: ChainStatus,
 }
 
 pub enum Msg {
@@ -25,14 +18,13 @@ pub enum Msg {
 
 impl Component for Header {
     type Message = Msg;
-    type Properties = Props;
+    type Properties = ();
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
         let ship_callback = link.callback(|message| Msg::ShipMsg(message));
         let mut ship = ShipWorker::bridge(ship_callback);
         ship.send(ShipRequest::Subscribe);
         Header {
-            props,
             ship,
             link,
             block_num: 0,
@@ -52,8 +44,7 @@ impl Component for Header {
         true
     }
 
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props = props;
+    fn change(&mut self, _: Self::Properties) -> ShouldRender {
         true
     }
 

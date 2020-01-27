@@ -1,7 +1,6 @@
 #![recursion_limit = "512"]
 
 mod app;
-mod chain;
 mod components;
 mod ship;
 mod utils;

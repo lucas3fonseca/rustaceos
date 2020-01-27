@@ -6,28 +6,16 @@ use yew::format::Binary;
 use yew::services::websocket::{WebSocketService, WebSocketStatus, WebSocketTask};
 use yew::services::Task;
 use yew::worker::*;
+use yew::Callback;
 
-use eosio_cdt::eos::{eos_deserialize, eos_serialize};
-use state_history::{
-    GetBlocksRequestV0, GetStatusRequestV0, ShipRequests, ShipResults, SignedBlockHeader, Traces,
-};
+use state_history::{Handler as ShipHandler, Ship};
 
 static ADDRESS: &str = "ws://localhost:8080";
-static INIT_BLOCK: u32 = 1;
-static END_BLOCK: u32 = 4294967294;
 
 #[derive(Eq, PartialEq)]
 pub enum ConnectionStatus {
     Offline,
     Online,
-}
-
-pub struct Ship {
-    block_num: u32,
-    head_block: u32,
-    lib: u32,
-    abi_definitions: Option<String>,
-    status: ConnectionStatus,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -72,17 +60,32 @@ impl From<Result<Vec<u8>, Error>> for ResponseType {
 pub enum Msg {
     SetConnected,
     SetDisconnected,
-    SetHeadLib(u32, u32),
-    SetBlock(u32),
-    WsResponse(ResponseType), //Result<ResponseType, Error>),
+    NotifyHeadLib,
+    WsResponse(ResponseType),
+}
+
+struct ShipTask {
+    ws: WebSocketTask,
+    head_lib_callback: Callback<(u32, u32)>,
+}
+
+impl ShipHandler for ShipTask {
+    fn request_bin(&mut self, bin: Vec<u8>) {
+        let bin: Binary = Ok(bin);
+        self.ws.send_binary(bin);
+    }
+
+    fn notify_head_lib(&self, head_lib: (u32, u32)) {
+        self.head_lib_callback.emit(head_lib);
+    }
 }
 
 pub struct ShipWorker {
     link: AgentLink<ShipWorker>,
     subscribers: Vec<HandlerId>,
     ws_service: WebSocketService,
-    ws: Option<WebSocketTask>,
-    data: Ship,
+    status: ConnectionStatus,
+    ship: Option<Ship<ShipTask>>,
 }
 
 impl Agent for ShipWorker {
@@ -95,43 +98,47 @@ impl Agent for ShipWorker {
         ShipWorker {
             link,
             ws_service: WebSocketService::new(),
-            ws: None,
+            // ws: None,
             subscribers: vec![],
-            data: Ship {
-                abi_definitions: None,
-                block_num: 0,
-                head_block: 0,
-                lib: 0,
-                status: ConnectionStatus::Offline,
-            },
+            status: ConnectionStatus::Offline,
+            ship: None,
         }
     }
 
     fn update(&mut self, msg: Self::Message) {
         match msg {
             Msg::SetConnected => {
-                self.data.status = ConnectionStatus::Online;
+                self.status = ConnectionStatus::Online;
                 self.notify_subscribers(Response::Connected);
             }
             Msg::SetDisconnected => {
-                self.data.status = ConnectionStatus::Offline;
-                self.ws = None;
+                self.status = ConnectionStatus::Offline;
+                self.ship = None;
+                // self.ws = None;
                 self.notify_subscribers(Response::Disconnected);
             }
-            Msg::SetHeadLib(head_block, lib) => {
-                self.data.head_block = head_block;
-                self.data.lib = lib;
-                self.notify_subscribers(Response::UpdatedHeadLib(head_block, lib));
-            }
-            Msg::SetBlock(block_num) => self.data.block_num = block_num,
-            Msg::WsResponse(data) => match data {
-                ResponseType::Binary(bin) => self.process_ship_binary(bin),
-                ResponseType::Text(txt) => self.process_ship_text(txt),
-                ResponseType::Error(e) => {
-                    error!("ship ws got error, disconnecting...\n{:?}", e);
-                    self.disconnect()
+            Msg::NotifyHeadLib => {
+                if let Some(ship) = &self.ship {
+                    let (head, lib) = ship.get_state();
+                    self.notify_subscribers(Response::UpdatedHeadLib(head, lib));
                 }
-            },
+            }
+            Msg::WsResponse(data) => {
+                if let Some(ship) = &mut self.ship {
+                    match data {
+                        ResponseType::Binary(bin) => ship
+                            .process_ship_binary(bin)
+                            .unwrap_or_else(|_| self.disconnect()),
+                        ResponseType::Text(txt) => ship
+                            .process_ship_text(txt)
+                            .unwrap_or_else(|_| self.disconnect()),
+                        ResponseType::Error(e) => {
+                            error!("ship ws got error, disconnecting...\n{:?}", e);
+                            self.disconnect();
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -151,82 +158,44 @@ impl ShipWorker {
             .for_each(|&i| self.link.respond(i, response));
     }
 
-    fn process_ship_text(&mut self, text: String) {
-        if self.data.abi_definitions.is_none() {
-            self.data.abi_definitions = Some(text);
-            info!("initialized abi definitions, requesting status...");
-            let status_request = ShipRequests::GetStatus(GetStatusRequestV0 {});
-            let bin: Binary = eos_serialize(&status_request).map_err(Error::msg);
-            self.ws.as_mut().unwrap().send_binary(bin);
-        } else {
-            info!("unknown ship response\n{}", text);
-        }
-    }
-
-    fn process_ship_binary(&mut self, bin: Vec<u8>) {
-        let status_response: ShipResults =
-            eos_deserialize(&bin).expect("fail to parse state history response");
-        match status_response {
-            ShipResults::GetStatus(res) => {
-                info!("received initial ship status, requesting blocks...");
-                self.update(Msg::SetHeadLib(
-                    res.block_position.block_num,
-                    res.last_irreversible.block_num,
-                ));
-
-                let block_request = ShipRequests::GetBlocks(GetBlocksRequestV0 {
-                    start_block_num: INIT_BLOCK,
-                    end_block_num: END_BLOCK + 1,
-                    max_messages_in_flight: 4294967295,
-                    have_positions: vec![],
-                    irreversible_only: false,
-                    fetch_block: true,
-                    fetch_traces: true,
-                    fetch_deltas: true,
-                });
-                let bin: Binary = eos_serialize(&block_request).map_err(Error::msg);
-                self.ws.as_mut().unwrap().send_binary(bin);
-            }
-            ShipResults::GetBlocks(res) => {
-                let head = res.head.block_num;
-                let lib = res.last_irreversible.block_num;
-                if self.data.head_block != head {
-                    self.update(Msg::SetHeadLib(head, lib));
-                }
-
-                if let Some(block) = res.this_block {
-                    self.update(Msg::SetBlock(block.block_num));
-                }
-            }
-        }
-    }
-
     fn connect(&mut self) {
-        if self.ws.is_some() {
+        if self.ship.is_some() {
             warn!("ship websocket connection is in progress...");
             return;
         }
 
-        let callback = self
+        let ws_callback = self
             .link
             .callback(|data: ResponseType| Msg::WsResponse(data));
-        let notification = self.link.callback(|status| match status {
+
+        let notification_callback = self.link.callback(|status| match status {
             WebSocketStatus::Opened => Msg::SetConnected,
             WebSocketStatus::Closed | WebSocketStatus::Error => Msg::SetDisconnected,
         });
 
-        let task = self
+        let ws = self
             .ws_service
-            .connect(ADDRESS, callback, notification)
+            .connect(ADDRESS, ws_callback, notification_callback)
             .expect("fail to instantiate websocket");
-        self.ws = Some(task);
+
+        let head_lib_callback = self
+            .link
+            .callback(|_head_lib: (u32, u32)| Msg::NotifyHeadLib);
+
+        let ship_task = ShipTask {
+            ws,
+            head_lib_callback,
+        };
+
+        self.ship = Some(Ship::new(ship_task));
     }
 
     fn disconnect(&mut self) {
-        if self.ws.is_none() {
+        if self.ship.is_none() {
             warn!("ship websocket is already off...");
         } else {
-            self.ws.take().unwrap().cancel();
+            self.ship.take().unwrap().handler.ws.cancel();
+            self.ship = None;
         }
     }
 }

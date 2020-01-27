@@ -1,21 +1,16 @@
 use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
-use crate::chain::ChainStatus;
 use crate::components::Header;
 use crate::components::Test;
 
-pub struct App {
-    chain: ChainStatus,
-}
+pub struct App;
 
 impl Component for App {
     type Message = ();
     type Properties = ();
 
     fn create(_: Self::Properties, _: ComponentLink<Self>) -> Self {
-        App {
-            chain: ChainStatus::default(),
-        }
+        App {}
     }
 
     fn update(&mut self, _msg: Self::Message) -> ShouldRender {
@@ -25,7 +20,7 @@ impl Component for App {
     fn view(&self) -> Html {
         html! {
             <>
-                <Header chain=&self.chain />
+                <Header />
                 <section class="section">
                     <div class="container">
                         <Test />
