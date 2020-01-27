@@ -2,10 +2,7 @@ use anyhow::Error;
 use log::{error, info, warn};
 use serde::{Deserialize, Serialize};
 use std::result::Result;
-use wasm_bindgen::prelude::*;
-use wasm_bindgen::JsCast;
-use web_sys::{ErrorEvent, MessageEvent, WebSocket};
-use yew::format::{Binary, Format, Json, Text};
+use yew::format::Binary;
 use yew::services::websocket::{WebSocketService, WebSocketStatus, WebSocketTask};
 use yew::services::Task;
 use yew::worker::*;
@@ -17,7 +14,7 @@ use state_history::{
 
 static ADDRESS: &str = "ws://localhost:8080";
 static INIT_BLOCK: u32 = 1;
-static END_BLOCK: u32 = 30;
+static END_BLOCK: u32 = 4294967294;
 
 #[derive(Eq, PartialEq)]
 pub enum ConnectionStatus {
@@ -29,6 +26,7 @@ pub struct Ship {
     block_num: u32,
     head_block: u32,
     lib: u32,
+    abi_definitions: Option<String>,
     status: ConnectionStatus,
 }
 
@@ -43,20 +41,21 @@ pub enum Request {
 pub enum Response {
     Connected,
     Disconnected,
+    UpdatedHeadLib(u32, u32),
 }
 
 #[derive(Debug)]
 pub enum ResponseType {
     Text(String),
     Binary(Vec<u8>),
-    Error,
+    Error(Error),
 }
 
 impl From<Result<String, Error>> for ResponseType {
     fn from(data: Result<String, Error>) -> Self {
         match data {
             Ok(data) => ResponseType::Text(data),
-            Err(e) => ResponseType::Error,
+            Err(e) => ResponseType::Error(e),
         }
     }
 }
@@ -65,7 +64,7 @@ impl From<Result<Vec<u8>, Error>> for ResponseType {
     fn from(data: Result<Vec<u8>, Error>) -> Self {
         match data {
             Ok(data) => ResponseType::Binary(data),
-            Err(e) => ResponseType::Error,
+            Err(e) => ResponseType::Error(e),
         }
     }
 }
@@ -99,6 +98,7 @@ impl Agent for ShipWorker {
             ws: None,
             subscribers: vec![],
             data: Ship {
+                abi_definitions: None,
                 block_num: 0,
                 head_block: 0,
                 lib: 0,
@@ -121,14 +121,16 @@ impl Agent for ShipWorker {
             Msg::SetHeadLib(head_block, lib) => {
                 self.data.head_block = head_block;
                 self.data.lib = lib;
+                self.notify_subscribers(Response::UpdatedHeadLib(head_block, lib));
             }
             Msg::SetBlock(block_num) => self.data.block_num = block_num,
             Msg::WsResponse(data) => match data {
-                ResponseType::Error => {
-                    error!("ship ws got error, disconnecting...");
+                ResponseType::Binary(bin) => self.process_ship_binary(bin),
+                ResponseType::Text(txt) => self.process_ship_text(txt),
+                ResponseType::Error(e) => {
+                    error!("ship ws got error, disconnecting...\n{:?}", e);
                     self.disconnect()
                 }
-                _ => info!("got some ws response {:?}", data),
             },
         }
     }
@@ -147,6 +149,56 @@ impl ShipWorker {
         self.subscribers
             .iter()
             .for_each(|&i| self.link.respond(i, response));
+    }
+
+    fn process_ship_text(&mut self, text: String) {
+        if self.data.abi_definitions.is_none() {
+            self.data.abi_definitions = Some(text);
+            info!("initialized abi definitions, requesting status...");
+            let status_request = ShipRequests::GetStatus(GetStatusRequestV0 {});
+            let bin: Binary = eos_serialize(&status_request).map_err(Error::msg);
+            self.ws.as_mut().unwrap().send_binary(bin);
+        } else {
+            info!("unknown ship response\n{}", text);
+        }
+    }
+
+    fn process_ship_binary(&mut self, bin: Vec<u8>) {
+        let status_response: ShipResults =
+            eos_deserialize(&bin).expect("fail to parse state history response");
+        match status_response {
+            ShipResults::GetStatus(res) => {
+                info!("received initial ship status, requesting blocks...");
+                self.update(Msg::SetHeadLib(
+                    res.block_position.block_num,
+                    res.last_irreversible.block_num,
+                ));
+
+                let block_request = ShipRequests::GetBlocks(GetBlocksRequestV0 {
+                    start_block_num: INIT_BLOCK,
+                    end_block_num: END_BLOCK + 1,
+                    max_messages_in_flight: 4294967295,
+                    have_positions: vec![],
+                    irreversible_only: false,
+                    fetch_block: true,
+                    fetch_traces: true,
+                    fetch_deltas: true,
+                });
+                let bin: Binary = eos_serialize(&block_request).map_err(Error::msg);
+                self.ws.as_mut().unwrap().send_binary(bin);
+            }
+            ShipResults::GetBlocks(res) => {
+                let head = res.head.block_num;
+                let lib = res.last_irreversible.block_num;
+                if self.data.head_block != head {
+                    self.update(Msg::SetHeadLib(head, lib));
+                }
+
+                if let Some(block) = res.this_block {
+                    self.update(Msg::SetBlock(block.block_num));
+                }
+            }
+        }
     }
 
     fn connect(&mut self) {

@@ -1,4 +1,3 @@
-use log::info;
 use yew::agent::Bridged;
 use yew::worker::Bridge;
 use yew::{html, Component, ComponentLink, Html, Properties, ShouldRender};
@@ -9,8 +8,9 @@ use crate::ship::{ConnectionStatus, Request as ShipRequest, Response as ShipResp
 pub struct Header {
     props: Props,
     link: ComponentLink<Self>,
-    ship: Box<Bridge<ShipWorker>>,
+    ship: Box<dyn Bridge<ShipWorker>>,
     connection: ConnectionStatus,
+    block_num: u32,
 }
 
 #[derive(Properties, Clone)]
@@ -35,6 +35,7 @@ impl Component for Header {
             props,
             ship,
             link,
+            block_num: 0,
             connection: ConnectionStatus::Offline,
         }
     }
@@ -44,6 +45,7 @@ impl Component for Header {
             Msg::ShipMsg(ship_response) => match ship_response {
                 ShipResponse::Connected => self.connection = ConnectionStatus::Online,
                 ShipResponse::Disconnected => self.connection = ConnectionStatus::Offline,
+                ShipResponse::UpdatedHeadLib(head, _lib) => self.block_num = head,
             },
             Msg::ConnectShip => self.ship.send(ShipRequest::Connect),
         }
@@ -75,7 +77,7 @@ impl Component for Header {
                     <div class="navbar-end">
                         <div class="navbar-item">
                             {"Block: "}
-                            <strong>{self.props.chain.block_num}</strong>
+                            <strong>{self.block_num}</strong>
                         </div>
                         {self.display_chain_status()}
                     </div>
