@@ -7,5 +7,6 @@ members = [
 
 # exclude = [
 #     "apps/fill-x",
+#     "apps/dapp-explorer",
 #     "contracts/hello",
 # ]
