@@ -31,8 +31,8 @@ console_error_panic_hook = { version = "0.1.6", optional = true }
 # allocator, however.
 wee_alloc = { version = "0.4.4", optional = true }
 
-eosio_cdt = { path = "../eosio_cdt" }
-state_history = { path = "../state_history" }
+eosio_cdt = { path = "../../crates/eosio_cdt" }
+state_history = { path = "../../crates/state_history" }
 
 # The `web-sys` crate allows you to interact with the various browser APIs,
 # like the DOM.
@@ -47,3 +47,5 @@ features = [
 
 [dev-dependencies]
 wasm-bindgen-test = "0.2"
+
+[workspace]
