@@ -15,7 +15,7 @@ nodeos -e -p eosio --plugin eosio::producer_plugin --plugin eosio::chain_api_plu
 * Start the app:
 ```
 git submodule update --init --recursive
-cd fill-x
+cd apps/fill-x
 cargo run
 ```
 

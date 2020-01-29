@@ -1,9 +1,9 @@
 use crate::eos;
 
 pub struct Contract {
-    contract: eos::Name,
-    code: eos::Name,
-    data_stream: Option<Vec<u8>>,
+    pub contract: eos::Name,
+    pub code: eos::Name,
+    pub data_stream: Option<Vec<u8>>,
 }
 
 impl Contract {
@@ -23,11 +23,11 @@ impl Contract {
         self.contract.value == self.code.value
     }
 
-    pub fn get_self(&self) -> &eos::Name {
-        &self.contract
+    pub fn get_self(&self) -> eos::Name {
+        self.contract.clone()
     }
 
-    pub fn get_code(&self) -> &eos::Name {
-        &self.code
+    pub fn get_code(&self) -> eos::Name {
+        self.code.clone()
     }
 }

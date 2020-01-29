@@ -2,16 +2,6 @@
   "version": "eosio::abi/1.0",
   "structs": [
     {
-      "name": "hi",
-      "base": "",
-      "fields": [
-        {
-          "name": "name",
-          "type": "name"
-        }
-      ]
-    },
-    {
       "name": "hello",
       "base": "",
       "fields": [
@@ -27,7 +17,12 @@
       "fields": []
     },
     {
-      "name": "checkage",
+      "name": "advanceages",
+      "base": "",
+      "fields": []
+    },
+    {
+      "name": "signupage",
       "base": "",
       "fields": [
         {
@@ -39,13 +34,47 @@
           "type": "uint16"
         }
       ]
+    },
+    {
+      "name": "updateage",
+      "base": "",
+      "fields": [
+        {
+          "name": "name",
+          "type": "name"
+        },
+        {
+          "name": "age",
+          "type": "uint16"
+        }
+      ]
+    },
+    {
+      "name": "signout",
+      "base": "",
+      "fields": [
+        {
+          "name": "name",
+          "type": "name"
+        }
+      ]
+    },
+    {
+      "name": "usersage",
+      "base": "",
+      "fields": [
+        {
+          "name": "user",
+          "type": "name"
+        },
+        {
+          "name": "age",
+          "type": "uint16"
+        }
+      ]
     }
   ],
   "actions": [
-    {
-      "name": "hi",
-      "type": "hi"
-    },
     {
       "name": "hello",
       "type": "hello"
@@ -55,10 +84,30 @@
       "type": "bye"
     },
     {
-      "name": "checkage",
-      "type": "checkage"
+      "name": "advanceages",
+      "type": "advanceages"
+    },
+    {
+      "name": "signupage",
+      "type": "signupage"
+    },
+    {
+      "name": "updateage",
+      "type": "updateage"
+    },
+    {
+      "name": "signout",
+      "type": "signout"
     }
   ],
-  "tables": [],
+  "tables": [
+    {
+      "name": "usersage",
+      "type": "usersage",
+      "index_type": "i64",
+      "key_names": [],
+      "key_types": []
+    }
+  ],
   "ricardian_clauses": []
 }

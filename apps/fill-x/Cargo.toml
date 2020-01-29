@@ -11,5 +11,7 @@ log = "0.4"
 env_logger = "0.7"
 websocket = "*"
 serde_json = "1.0.44"
-eosio_cdt = { path = "../eosio_cdt" }
-state_history = { path = "../state_history" }
+eosio_cdt = { path = "../../crates/eosio_cdt" }
+state_history = { path = "../../crates/state_history" }
+
+[workspace]
