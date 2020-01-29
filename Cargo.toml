@@ -1,10 +1,11 @@
 [workspace]
 members = [
-    "bincode",
-    "eosio_cdt",
-    "fill-x",
-    "state_history",
+    "crates/bincode",
+    "crates/eosio_cdt",
+    "crates/state_history",
 ]
-exclude = [
-    "contracts/hello",
-]
+
+# exclude = [
+#     "apps/fill-x",
+#     "contracts/hello",
+# ]

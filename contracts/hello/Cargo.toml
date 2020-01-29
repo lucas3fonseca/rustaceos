@@ -11,5 +11,7 @@ crate-type = ["cdylib"]
 lto = true
 
 [dependencies]
-eosio_cdt = { path = "../../eosio_cdt" }
+eosio_cdt = { path = "../../crates/eosio_cdt" }
 serde = { version = "1.0.63", features = ["derive"] }
+
+[workspace]
