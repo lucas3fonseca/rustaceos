@@ -1,6 +1,0 @@
-[submodule "abieos/external/abieos"]
-	path = abieos/external/abieos
-	url = https://github.com/EOSIO/abieos
-[submodule "eosio_cdt/external/eosio.cdt"]
-	path = eosio_cdt/external/eosio.cdt
-	url = git@github.com:EOSIO/eosio.cdt.git
