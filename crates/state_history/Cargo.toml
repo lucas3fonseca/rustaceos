@@ -7,5 +7,6 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1"
 eosio_cdt = { path = "../eosio_cdt" }
 serde = { version = "1.0.63", features = ["derive"] }
