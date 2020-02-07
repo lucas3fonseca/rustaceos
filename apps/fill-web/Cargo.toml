@@ -1,0 +1,30 @@
+[package]
+name = "fill_web"
+version = "0.1.0"
+authors = ["Leo Ribeiro <leordev@gmail.com>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = "0.2.58"
+log = "0.4.6"
+wasm-logger = "0.2.0"
+js-sys = "0.3.35"
+gloo = "0.2"
+state_history = { path = "../../crates/state_history" }
+
+[dependencies.web-sys]
+version = "0.3.35"
+features = [
+  "BinaryType",
+  "CloseEvent",
+  "Event",
+  "ErrorEvent",
+  "MessageEvent",
+  "WebSocket",
+  "Window",
+]
+
+[workspace]
