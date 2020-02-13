@@ -5,9 +5,9 @@ use websocket::{ClientBuilder, Message, OwnedMessage};
 
 mod serialize;
 
-use eosio_cdt::eos::{eos_deserialize, eos_serialize};
+use eosio_cdt::eos::{eos_deserialize, eos_serialize, name};
 use state_history::{
-    GetBlocksRequestV0, GetStatusRequestV0, ShipRequests, ShipResults, SignedBlockHeader, Traces,
+    GetBlocksRequestV0, GetStatusRequestV0, ShipRequests, ShipResults, SignedBlock, Traces,
 };
 
 static ADDRESS: &str = "http://localhost:8080";
@@ -121,15 +121,19 @@ fn process_block(message: OwnedMessage) -> u32 {
             println!("\n>>> Chain Head: {}", block_result.head.block_num);
             if let Some(block) = block_result.this_block {
                 if let Some(block_bytes) = block_result.block {
-                    let block_header: SignedBlockHeader =
+                    let block_header: SignedBlock =
                         eos_deserialize(&block_bytes).expect("fail to parse signed block header");
-                    println!("Block {} Header >>> {:?}", block.block_num, block_header)
+                    println!("Block {} Header >>> {:?}", block.block_num, block_header);
                 }
 
                 if let Some(trace_bytes) = block_result.traces {
                     let traces: Vec<Traces> =
                         eos_deserialize(&trace_bytes).expect("fail to parse block traces");
                     println!("Trx Traces >>> {:?}", traces);
+
+                    match traces[0] {
+                      Traces::TransactionTrace(ref tr) => println!("receiver name: {:?}", name::name_to_string(tr.action_traces[0].receiver)),
+                    }
                 }
 
                 return block.block_num;
