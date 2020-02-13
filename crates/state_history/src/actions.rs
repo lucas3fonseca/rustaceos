@@ -1,6 +1,6 @@
 use crate::blocks::Extension;
 use eosio_cdt::eos::{
-    Checksum256, Deserialize, Name, PermissionLevel, Serialize, Signature, TimePointSec, Varuint32,
+    Checksum256, Deserialize, Name, Serialize, Signature, TimePointSec, Varuint32,
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -18,11 +18,11 @@ pub struct TransactionTraceV0 {
     pub net_usage: u64,
     pub scheduled: bool,
     pub action_traces: Vec<ActionTraceV0>,
-    pub account_ram_delta: Option<AccountDelta>,
-    pub except: Option<String>,
-    pub error_code: Option<u64>,
-    pub failed_dtrx_trace: Option<Box<TransactionTraceV0>>,
-    pub partial: Option<PartialTransactionV0>,
+    // pub account_ram_delta: Option<AccountDelta>,
+    // pub except: Option<String>,
+    // pub error_code: Option<u64>,
+    // pub failed_dtrx_trace: Option<Box<TransactionTraceV0>>,
+    // pub partial: Option<PartialTransactionV0>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -39,9 +39,36 @@ pub struct PartialTransactionV0 {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct TransactionReceiptHeader {
+  pub status: u8,
+  pub cpu_usage_us: u32,
+  pub net_usage_words: u32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PackedTransaction {
+  signatures: Vec<Signature>,
+  compression: u8,
+  packed_context_free_data: Vec<u8>,
+  packed_trx: Vec<u8>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum TransactionVariant {
+  TransactionId(Checksum256),
+  PackedTransaction(PackedTransaction),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TransactionReceipt {
+  pub transaction_receipt_header: TransactionReceiptHeader,
+  pub trx: TransactionVariant,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ActionTraceV0 {
     pub action_ordinal: Varuint32,
-    pub creator_action_ordinal: u32,
+    pub creator_action_ordinal: Varuint32,
     pub receipt: Option<ActionReceipt>,
     pub receiver: Name,
     pub act: Action,
@@ -74,8 +101,8 @@ pub struct AccountAuthSequence {
 pub struct Action {
     pub account: Name,
     pub name: Name,
-    pub authorization: Vec<PermissionLevel>,
-    pub data: Vec<u8>,
+    // pub authorization: Vec<PermissionLevel>,
+    // pub data: Vec<u8>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

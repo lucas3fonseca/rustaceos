@@ -1,4 +1,5 @@
 use eosio_cdt::eos::{Checksum256, Deserialize, Name, PublicKey, Serialize, Signature};
+use crate::actions::{TransactionReceipt};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BlockPosition {
@@ -23,6 +24,13 @@ pub struct BlockHeader {
 pub struct SignedBlockHeader {
     pub header: BlockHeader,
     pub producer_signature: Signature,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SignedBlock {
+  pub signed_block_header: SignedBlockHeader,
+  pub transactions: Vec<TransactionReceipt>,
+  pub block_extensions: Vec<Extension>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
